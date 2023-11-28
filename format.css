@@ -43,6 +43,6 @@ img[class = imgs]{
 img[class = 'map']{
     height: 500px;
 }
-section[class = 'map']{
-    float: right
+section[class = 'map']::after{
+    float: left
 }

@@ -58,12 +58,14 @@
         let map = d3.select('#mid')
         map.append('section')
             .attr('class', 'map')
+
         map.select('section')
             .append('img')
             .attr('class', 'map')
             .attr('src', 'Maps/map1.png')
             .attr('style', 'max-width:100%')
             .attr('usemap', 'work')
+
         map.select('section')
             .append('img')
             .attr('class', 'map')
@@ -74,14 +76,27 @@
         // Add Simple graphs -------------------------------------------------------------------------------------------------------
         let min_data = water[0].visitDate
 
+        // find date
+        // inputs: data
+        // returns: an array that holds three array containing all the year, months and days
         function find_date(data){
-            var years = d3.reduce(data, (d)=> d.visitDate.substring(0, 4)) 
-        
-            return years
+            let years = []
+            let months = []
+            let days = []
+            for(var i = 0; i < data.length; i++){
+                    years.push(Number(data[i].visitDate.substring(0,4)))
+                    months.push(Number(data[i].visitDate.substring(4, 6)))
+                    days.push(Number(data[i].visitDate.substring(6, 8)))
+            }
+            return [years, months, days]
         }
 
         let dates = find_date(water)
-        console.log(dates)
+        
+        let min_year = d3.min(dates[0])
+        let max_year = d3.max(dates[0])
+
+        console.log(max_year)
   
      </script>
 </body>
