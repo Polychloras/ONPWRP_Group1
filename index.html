@@ -7,6 +7,7 @@
     </head>
 
 <body>
+    <div id = title></div>
     <div id = "top"></div>
     <div id = "mid"></div>
 
@@ -14,13 +15,28 @@
     <script type = "module">
         let water = await d3.csv("Midden_Oakwoods_Data_Water.csv"); 
         let soil = await d3.csv("Midden_Oakwoods_Data_Soil.csv"); 
+        let images = ["ColdWater", "ParkDistrict", "Provider"];
         let cvs_files = ["water", "soil"]
         let data_list = [water, soil]
         
         console.log(water[0]) 
         
-        //build navidation bar
+        //Header
+        let imgs = d3.select('#title')
+                      .append('header')
+                      .text("Oakwoods Nature Preservation Water Researve Project")
 
+        // Add Footer Images
+        imgs.select('#mid')
+              .append('footer')
+              .append('nav')
+              .data(images)
+              .join('img')
+              .attr('class', 'imgs')
+              .attr('src', (d) => "Images/" + d + ".png")
+              .attr('alt', (d) => d)
+
+        // Add navigation buttons
         let navbar = d3.select("#top");
         navbar.append('nav')
               .attr('class', 'navbar')
@@ -37,6 +53,9 @@
                 .join("label")
                 .append('a')
                 .text((d)=>d)
+
+
+               
                 
      </script>
 </body>
