@@ -7,15 +7,29 @@
 </head>
 
 <body>
-    <div id = "window"></div>
+    <div id = "top"></div>
+    <div is = "mid"></div>
 </body>
 
 <script>
     const soil_data = await d3.csv("Midden_Oakwoods_Data_LEE_Soil.csv");
-    let canvas = d3.select("#window")
+    let canvas = d3.select("#top")
     canvas.append('div')
-    
+    canvas.append('nav')
+    canvas.append('ul')
+    canvas.append('li')
 
+    let plot = d3.select("#mid")
+    plot.append('div')
+
+    let x = d3.scaleLinear()
+            .domain([min(soil_data.x), max(soil_data.y)])
+            .range([0, 1000])
+
+    let gx = plot.append('g')   
+                .attr("transform", `translate(0,${height - marginBottom})`)
+                .call(d3.axisBottom(x))
+                  
 </script>
 
 </html>
