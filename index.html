@@ -7,7 +7,6 @@
     </head>
 
 <body>
-    <h1>START</h1>
     <div id = "top"></div>
     <div id = "mid"></div>
 
@@ -15,7 +14,30 @@
     <script type = "module">
         let water = await d3.csv("Midden_Oakwoods_Data_Water.csv"); 
         let soil = await d3.csv("Midden_Oakwoods_Data_Soil.csv"); 
-        console.log(water[0])    
+        let cvs_files = ["water", "soil"]
+        let data_list = [water, soil]
+        
+        console.log(water[0]) 
+        
+        //build navidation bar
+
+        let navbar = d3.select("#top");
+        navbar.append('nav')
+              .attr('class', 'navbar')
+              .append('ul')
+        
+        let nav_btns = navbar.selectAll('ul')
+
+        nav_btns.selectAll()
+                .data(cvs_files)
+                .join('li')
+                .attr('class', 'navbar')
+        
+        nav_btns.selectAll('li')
+                .join("label")
+                .append('a')
+                .text((d)=>d)
+                
      </script>
 </body>
 </html>

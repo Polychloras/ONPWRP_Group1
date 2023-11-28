@@ -1,0 +1,26 @@
+li[class ='navbar']{
+    float: left;
+    list-style-type: none;
+}
+
+li[class = 'navbar'] a {
+    display:block;
+    background-color:#7ECA9C;
+    text-align: center;
+    padding: 10px 10px;
+    margin: 5px;
+    text-decoration: none;
+}
+
+li[class = 'navbar'] a:hover{
+    background-color:#CCFFBD;
+
+}
+
+nav[class= 'navbar']{
+    list-style-type: none;
+    margin : 0;
+    padding : 0;
+    overflow:hidden;
+    background-image:linear-gradient(to bottom right, #CCFFBD, #7ECA9C);
+}
