@@ -12,6 +12,11 @@
 </body>
 
 <script type = "module">
+    d3.csv("Midden_Oakwoods_Data_Soil.csv", function(data){
+        for(var i = 0; i< data.length; i++){
+            console.log(data[i].x);
+        }
+    });
     let canvas = d3.select("#top")
     canvas.append('div')
     canvas.append('nav')
