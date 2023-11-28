@@ -39,3 +39,10 @@ img[class = imgs]{
     float: right;  
     padding: 10px 10px;  
 }
+
+img[class = 'map']{
+    height: 500px;
+}
+section[class = 'map']{
+    float: right
+}

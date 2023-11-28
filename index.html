@@ -21,12 +21,12 @@
         
         console.log(water[0]) 
         
-        //Header
+        //Header --------------------------------------------------------------------------------------------------------------------
         let imgs = d3.select('#title')
                       .append('header')
-                      .text("Oakwoods Nature Preservation Water Researve Project")
+                      .text("Oakwoods Nature Preserve Water Restoration Project")
 
-        // Add Footer Images
+        // Add Footer Images --------------------------------------------------------------------------------------------------------
         imgs.select('#mid')
               .append('footer')
               .append('nav')
@@ -36,7 +36,7 @@
               .attr('src', (d) => "Images/" + d + ".png")
               .attr('alt', (d) => d)
 
-        // Add navigation buttons
+        // Add navigation buttons ----------------------------------------------------------------------------------------------------
         let navbar = d3.select("#top");
         navbar.append('nav')
               .attr('class', 'navbar')
@@ -54,9 +54,35 @@
                 .append('a')
                 .text((d)=>d)
 
+        // Add Map ----------------------------------------------------------------------------------------------------------------
+        let map = d3.select('#mid')
+        map.append('section')
+            .attr('class', 'map')
+        map.select('section')
+            .append('img')
+            .attr('class', 'map')
+            .attr('src', 'Maps/map1.png')
+            .attr('style', 'max-width:100%')
+            .attr('usemap', 'work')
+        map.select('section')
+            .append('img')
+            .attr('class', 'map')
+            .attr('src', 'Maps/map2.png')
+            .attr('style', 'max-width:100%')
+            .attr('usemap', 'work')
 
-               
-                
+        // Add Simple graphs -------------------------------------------------------------------------------------------------------
+        let min_data = water[0].visitDate
+
+        function find_date(data){
+            var years = d3.reduce(data, (d)=> d.visitDate.substring(0, 4)) 
+        
+            return years
+        }
+
+        let dates = find_date(water)
+        console.log(dates)
+  
      </script>
 </body>
 </html>
