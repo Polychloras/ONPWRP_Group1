@@ -12,7 +12,44 @@
 </body>
 
 <script type = "module">
-    const soil_data = await d3.csv("Midden_Oakwoods_Data_Lee_Soil.csv");
+    const soil_data = await d3.csv(",", "Midden_Oakwoods_Data_Lee_Soil.csv", (d) => {
+        return {
+            username: d.username,
+            map_label: d.map_label,
+            project_code: d.project_code,
+            sampleMedia: d.sampleMedia,
+            combinedID: d.combinedID,
+            sampleID: d.sampleID,
+            internalSampleID: d.internalSampleID,
+            visitDate: d.visitDate,
+            dateAnalTPTN: d.dateAnalTPTN,
+            TP: d.TP,
+            TN: d.TN,
+            dateAnalM3Ex: d.dateAnalM3Ex,
+            dateAnalM3ICP: d.dateAnalM3ICP,
+            m3_P: d.m3_P,
+            m3_Fe: d.m3_Fe,
+            m3_Al: d.m3_Al,
+            SPSC: d.SPSC,
+            dateAnalWE: d.dateAnalWE,
+            wEX_P: d.wEX_P,
+            wEX_NH3: d.wEX_NH3,
+            wEX_NOx: d.wEX_NOx,
+            dateAnalpH: d.dateAnalpH,
+            pH: d.ph,
+            dateAnalEC: d.dateAnalEC,
+            EC: d.EC,
+            samp_type: d.samp_type,
+            locName: d.locName,
+            location_sortable: d.location_sortable,
+            specific_location: d.specific_location,
+            samp_type: d.samp_type,
+            notes: d.notes,
+            samp_notes: d.samp_notes,
+            y: d.y,
+            x: d.x
+        }
+    });
     let canvas = d3.select("#top")
     canvas.append('div')
     canvas.append('nav')
