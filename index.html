@@ -3,6 +3,7 @@
     <head>
         <link rel = stylesheet href="format.css">
         <script src="d3.v7.js"></script>
+        <title>Start Page</title>
     </head>
 
 <body>
@@ -12,7 +13,9 @@
 
 
     <script type = "module">
-       // data = await d3.csv("Midden_Oakwoods_Data_Water.csv");        
+        let water = await d3.csv("Midden_Oakwoods_Data_Water.csv"); 
+        let soil = await d3.csv("Midden_Oakwoods_Data_Soil.csv"); 
+        console.log(water[0])    
      </script>
 </body>
 </html>
