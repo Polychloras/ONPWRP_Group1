@@ -17,22 +17,6 @@
             console.log(data[i].x);
         }
     });
-    let canvas = d3.select("#top")
-    canvas.append('div')
-    canvas.append('nav')
-    canvas.append('ul')
-    canvas.append('li')
-
-    let plot = d3.select("#mid")
-    plot.append('div')
-
-    let x = d3.scaleLinear()
-            .domain([0, 100])
-            .range([0, 1000])
-
-    let gx = plot.append('g')   
-                .attr("transform", `translate(0,${10})`)
-                .call(d3.axisBottom(x))
                   
 </script>
 
