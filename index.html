@@ -9,15 +9,17 @@
 <body>
     <div id = "top"></div>
     <div is = "mid"></div>
+
+
+    <script type = "module">
+         d3.csv("Midden_Oakwoods_Data_Soil.csv", function(data){
+             for(var i = 0; i< data.length; i++){
+                 console.log(data[i].x);
+             }
+         });         
+     </script>
 </body>
 
-<script type = "module">
-    d3.csv("Midden_Oakwoods_Data_Soil.csv", function(data){
-        for(var i = 0; i< data.length; i++){
-            console.log(data[i].x);
-        }
-    });
-                  
-</script>
+
 
 </html>
