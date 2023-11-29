@@ -74,7 +74,15 @@
             .attr('usemap', 'work')
 
         // Add Simple graphs -------------------------------------------------------------------------------------------------------
-        let min_data = water[0].visitDate
+        const graph = d3.select('#mid')
+        graph.append('section')
+                  .attr('class', 'graph')
+        
+        var svg = graph.append('svg')
+                        .attr('width', 500)
+                        .attr('height', 500)
+
+        
 
         // find date
         // inputs: data
@@ -84,20 +92,29 @@
             let months = []
             let days = []
             for(var i = 0; i < data.length; i++){
-                    years.push(Number(data[i].visitDate.substring(0,4)))
-                    months.push(Number(data[i].visitDate.substring(4, 6)))
-                    days.push(Number(data[i].visitDate.substring(6, 8)))
+                let date = data[i].visitDate.substring(0,4) + "-" 
+                         + data[i].visitDate.substring(4, 6) + "-" 
+                         + data[i].visitDate.substring(6,8)
+                    years.push(new Date(date))
             }
-            return [years, months, days]
+            return years
         }
 
         let dates = find_date(water)
         
-        let min_year = d3.min(dates[0])
-        let max_year = d3.max(dates[0])
-
-        console.log(max_year)
-  
+        let min_date = d3.min(dates)
+        let max_date = d3.max(dates)
+        
+        let x = d3.scaleTime()
+                    .domain([min_date, max_date])
+                    .range([10, 400])
+        console.log(x)
+        
+        svg.append("g")
+            .attr("transform", `translate(0,30)`)
+            .call(d3.axisBottom(x))
+        
+        mid.append(svg.node())
      </script>
 </body>
 </html>

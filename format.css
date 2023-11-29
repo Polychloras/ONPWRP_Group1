@@ -46,3 +46,7 @@ img[class = 'map']{
 section[class = 'map']::after{
     float: left
 }
+
+section[class = 'graph']::after{
+    float: right
+}
