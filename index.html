@@ -2,17 +2,30 @@
 <html>
     <head>
         <link rel = stylesheet href="format.css">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>    
         <script src="d3.v7.js"></script>
         <title>Start Page</title>
+        <script>
+            const soil_mdls = [10, 50, 0.32, 0.11, 3.3, 0.95, 0.91, 0.97, 0.2, 0.4, 1.0]
+            const soil_cols = ['TP', 'TN', 'm3.P', 'm3.Fe', 'm3.Al', 'm3.Ca', 'm3.Mg', 'm3.K', 'wEX.P', 'wEX.NH3', 'wEX.NOx']
+            
+            const wtr_mdls = [0.01, 0.02, 0.05, 0.015, 0.075]
+            const wtr_cols = ['disPO4', 'disNH4', 'disNO3','TP', 'TN']
+
+            const wind = {width : 800, height : 600, margin : 30}
+        </script>
     </head>
 
 <body>
-    <div id = title></div>
+    <div id = "title"></div>
     <div id = "top"></div>
     <div id = "mid"></div>
-
-
+    <dic id = "map"></div>
+        <p></p>
+  
     <script type = "module">
+
         let water = await d3.csv("Midden_Oakwoods_Data_Water.csv"); 
         let soil = await d3.csv("Midden_Oakwoods_Data_Soil.csv"); 
         let images = ["ColdWater", "ParkDistrict", "Provider"];
@@ -54,24 +67,13 @@
                 .append('a')
                 .text((d)=>d)
 
-        // Add Map ----------------------------------------------------------------------------------------------------------------
-        let map = d3.select('#mid')
-        map.append('section')
+        //Add Map ----------------------------------------------------------------------------------------------------------------
+        let attribution = d3.select('#map')
+        attribution.append('section')
             .attr('class', 'map')
-
-        map.select('section')
-            .append('img')
-            .attr('class', 'map')
-            .attr('src', 'Maps/map1.png')
-            .attr('style', 'max-width:100%')
-            .attr('usemap', 'work')
-
-        map.select('section')
-            .append('img')
-            .attr('class', 'map')
-            .attr('src', 'Maps/map2.png')
-            .attr('style', 'max-width:100%')
-            .attr('usemap', 'work')
+            .append('a')
+            .attr('href', "http://www.openstreetmap.org/copyright")
+            .text("openstreetmap")
 
         // Add Simple graphs -------------------------------------------------------------------------------------------------------
         const graph = d3.select('#mid')
@@ -79,8 +81,8 @@
                   .attr('class', 'graph')
         
         var svg = graph.append('svg')
-                        .attr('width', 500)
-                        .attr('height', 500)
+                        .attr('width', wind.width + wind.margin)
+                        .attr('height', wind.height + wind.margin)
 
         
 
@@ -89,31 +91,87 @@
         // returns: an array that holds three array containing all the year, months and days
         function find_date(data){
             let years = []
-            let months = []
-            let days = []
+            
             for(var i = 0; i < data.length; i++){
                 let date = data[i].visitDate.substring(0,4) + "-" 
                          + data[i].visitDate.substring(4, 6) + "-" 
                          + data[i].visitDate.substring(6,8)
+                    data[i].visitDate = date
                     years.push(new Date(date))
             }
             return years
         }
 
+        function find_col(data, column){
+            let numbers = []
+            for(var i = 0; i < data.length; i++){
+                let element = data[i][column];
+                numbers.push(Number(element))
+             
+            }
+            return numbers
+        }
+
+        function remove_MDLs(data, mdls, columns){
+            for(var i = 0; i < data.length; i++){
+                for(var j = 0; j < mdls.length; j++){
+                    if(data[i][columns[j]] != null){
+                        data[i][columns[j]] = data[i][columns[j]].replaceAll(" ", "")
+                        if(data[i][columns[j]] == "<MDL"){
+                        data[i][columns[j]] = mdls[j]
+                    }
+                    data[i][columns[j]] = Number(data[i][columns[j]])
+                    }
+                    
+                }
+            }
+        }
+
+        remove_MDLs(water, wtr_mdls, wtr_cols)
+        remove_MDLs(soil, soil_mdls, soil_cols)
         let dates = find_date(water)
-        
+        let n4 = find_col(water, 'TN')
+
         let min_date = d3.min(dates)
         let max_date = d3.max(dates)
-        
+        let min = d3.min(n4)
+        let max = d3.max(n4)
+        water = d3.filter(water, (d) => d['TN'] != '')
+        console.log(water.columns)
+
         let x = d3.scaleTime()
                     .domain([min_date, max_date])
-                    .range([10, 400])
-        console.log(x)
+                    .range([wind.margin, wind.width - wind.margin])
+        
+        let y = d3.scaleLinear()
+                .domain([min, max+1])
+                .range([wind.height - wind.margin, wind.margin])
         
         svg.append("g")
-            .attr("transform", `translate(0,30)`)
+            .attr("transform", `translate(${wind.margin}, ${wind.height - wind.margin})`)
             .call(d3.axisBottom(x))
+
+            svg.append("g")
+            .attr("transform", `translate(${wind.margin}, 0)`)
+            .call(d3.axisLeft(y))
         
+        svg.append('g')
+            .selectAll('circle')
+            .data(water)
+            .join('circle')
+                .attr('cy', (d, i) => {( d['TN']); return y(d['TN'])})
+                .attr('cx', (d, i) => {return wind.margin + x(dates[i])})
+                .attr('r', 2)
+                .attr('fill', 'teal')
+
+        
+        
+        var map = L.map('map').setView([ 41.024108551696095, -83.68860776599949], 17);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
         mid.append(svg.node())
      </script>
 </body>

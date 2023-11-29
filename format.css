@@ -38,15 +38,11 @@ img[class = imgs]{
     height:70px;
     float: right;  
     padding: 10px 10px;  
+ 
 }
 
 img[class = 'map']{
     height: 500px;
 }
-section[class = 'map']::after{
-    float: left
-}
 
-section[class = 'graph']::after{
-    float: right
-}
+#map {position: relative;}
