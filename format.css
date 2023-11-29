@@ -6,9 +6,40 @@ header {
     color: white;
   }
 
+
+ul[class = 'navbar']{
+    list-style-type: none;
+    margin : 0;
+    padding : 5px;
+    overflow:hidden;
+    background-image:linear-gradient(to bottom right, #7ECA9C, #CCFFBD);
+}
+
 li[class ='navbar']{
     float: left;
     list-style-type: none;
+    padding: 10px 10px;
+}
+
+li[class ='copyright']{
+    float: inline-end;
+    list-style-type: none;
+    padding: 10px 10px;
+
+}
+
+li[class = 'copyright'] a {
+    display:block;
+    background-color:#7ECA9C;
+    text-align: center;
+    padding: 10px 10px;
+    margin: 5px;
+    text-decoration: none;
+}
+
+li[class = 'copyright'] a:hover{
+    background-color:#CCFFBD;
+
 }
 
 li[class = 'navbar'] a {
@@ -36,7 +67,7 @@ nav[class= 'navbar']{
 img[class = imgs]{
     width: 70px;
     height:70px;
-    float: right;  
+    float: inline-end;  
     padding: 10px 10px;  
  
 }
@@ -45,4 +76,21 @@ img[class = 'map']{
     height: 500px;
 }
 
-#map {position: relative;}
+div[class = 'graph']{
+    float:initial;
+}
+
+div[class = 'copyright']{
+    float:none;
+
+}
+
+#map {position: relative;
+      top:0%;
+      bottom: 0%;
+      left: 0%;
+      right:0%;
+      width: 50vw;
+      height: 400px;
+      float:left;
+     }

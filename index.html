@@ -13,34 +13,40 @@
             const wtr_mdls = [0.01, 0.02, 0.05, 0.015, 0.075]
             const wtr_cols = ['disPO4', 'disNH4', 'disNO3','TP', 'TN']
 
-            const wind = {width : 800, height : 600, margin : 30}
+            const wind = {width : window.innerWidth/2 - 50, height : window.innerHeight/2, margin : 30}
+
         </script>
     </head>
 
 <body>
     <div id = "title"></div>
     <div id = "top"></div>
-    <div id = "mid"></div>
-    <dic id = "map"></div>
-        <p></p>
+    <div id = "mid">
+        <div id = "map"></div>
+        <div id = graph class = "graph"></div>
+    </div>
+    <p></p>
+    <div id = "foot"></div>
   
     <script type = "module">
-
         let water = await d3.csv("Midden_Oakwoods_Data_Water.csv"); 
         let soil = await d3.csv("Midden_Oakwoods_Data_Soil.csv"); 
         let images = ["ColdWater", "ParkDistrict", "Provider"];
-        let cvs_files = ["water", "soil"]
-        let data_list = [water, soil]
+
+        let cvs_files = {"water": {"data": water, "mdl_cols":wtr_cols, "mdl_vals": wtr_mdls},
+                        "soil":{"data": soil, "mdl_cols":soil_cols, "mdl_vals": soil_mdls}}
+        let cvs_names = ['water', 'soil']
+        let defualt = "water"
+        let selected = defualt
         
-        console.log(water[0]) 
-        
+
         //Header --------------------------------------------------------------------------------------------------------------------
         let imgs = d3.select('#title')
                       .append('header')
                       .text("Oakwoods Nature Preserve Water Restoration Project")
 
         // Add Footer Images --------------------------------------------------------------------------------------------------------
-        imgs.select('#mid')
+        imgs.select('#foot')
               .append('footer')
               .append('nav')
               .data(images)
@@ -54,53 +60,61 @@
         navbar.append('nav')
               .attr('class', 'navbar')
               .append('ul')
-        
-        let nav_btns = navbar.selectAll('ul')
-
-        nav_btns.selectAll()
-                .data(cvs_files)
-                .join('li')
                 .attr('class', 'navbar')
         
-        nav_btns.selectAll('li')
-                .join("label")
-                .append('a')
-                .text((d)=>d)
-
-        //Add Map ----------------------------------------------------------------------------------------------------------------
-        let attribution = d3.select('#map')
-        attribution.append('section')
-            .attr('class', 'map')
-            .append('a')
-            .attr('href', "http://www.openstreetmap.org/copyright")
-            .text("openstreetmap")
+        let nav_btns = navbar.selectAll('ul')
+                             .append('li')
+                                .attr('class', 'navbar')                  
+        
+        let nav_label = nav_btns.append("label")
+                .attr("for", "map_select")
+                .attr("font-size", 16)
+                .text("Sample Media ")
+        
+        let map_drop = nav_btns.append("select")
+                .attr("id", `map_select`)
+                .attr("name", 'map_select')
+        
+      
+         // add options to map seletion dropdown
+         var nav_drp = map_drop.selectAll()
+                            .data(cvs_names)
+                            .join(
+                                enter => enter.append('option')
+                            .text(d => d)
+                            .attr("value", (d) => d)
+                        )
+        
+        // Add Copy Right
+        let attribution = navbar.selectAll('ul')
+                            .append('li')
+                                .attr('class', 'copyright')
+                            .append('a')
+                                .attr('href', "http://www.openstreetmap.org/copyright")
+                                .text("openstreetmap copyright")
 
         // Add Simple graphs -------------------------------------------------------------------------------------------------------
-        const graph = d3.select('#mid')
-        graph.append('section')
+        const graphic = d3.select('#graph')
+        const graph_sec = graphic.append('div')
                   .attr('class', 'graph')
         
-        var svg = graph.append('svg')
+        var svg = graph_sec
+                        .append('svg')
                         .attr('width', wind.width + wind.margin)
                         .attr('height', wind.height + wind.margin)
-
-        
 
         // find date
         // inputs: data
         // returns: an array that holds three array containing all the year, months and days
-        function find_date(data){
-            let years = []
-            
+        function format_date(data){
             for(var i = 0; i < data.length; i++){
                 let date = data[i].visitDate.substring(0,4) + "-" 
                          + data[i].visitDate.substring(4, 6) + "-" 
                          + data[i].visitDate.substring(6,8)
-                    data[i].visitDate = date
-                    years.push(new Date(date))
+                    data[i].visitDate =  new Date(date)
             }
-            return years
         }
+
 
         function find_col(data, column){
             let numbers = []
@@ -127,52 +141,118 @@
             }
         }
 
-        remove_MDLs(water, wtr_mdls, wtr_cols)
-        remove_MDLs(soil, soil_mdls, soil_cols)
-        let dates = find_date(water)
-        let n4 = find_col(water, 'TN')
+        function clean_data(){
+            for(var i = 0; i < cvs_names.length; i++){
+                let file_data = cvs_names[i]
+                format_date(cvs_files[file_data].data)
+                remove_MDLs(cvs_files[file_data].data, cvs_files[file_data].mdl_vals, cvs_files[file_data].mdl_cols)
+            }
+        }
 
-        let min_date = d3.min(dates)
-        let max_date = d3.max(dates)
-        let min = d3.min(n4)
-        let max = d3.max(n4)
-        water = d3.filter(water, (d) => d['TN'] != '')
-        console.log(water.columns)
+        //Add Map ----------------------------------------------------------------------------------------------------------------
+        clean_data();
+        let data = cvs_files[selected].data
+        build_graph(cvs_files[selected].data)
 
-        let x = d3.scaleTime()
-                    .domain([min_date, max_date])
-                    .range([wind.margin, wind.width - wind.margin])
-        
-        let y = d3.scaleLinear()
-                .domain([min, max+1])
-                .range([wind.height - wind.margin, wind.margin])
-        
-        svg.append("g")
-            .attr("transform", `translate(${wind.margin}, ${wind.height - wind.margin})`)
-            .call(d3.axisBottom(x))
 
-            svg.append("g")
-            .attr("transform", `translate(${wind.margin}, 0)`)
-            .call(d3.axisLeft(y))
-        
-        svg.append('g')
-            .selectAll('circle')
-            .data(water)
-            .join('circle')
-                .attr('cy', (d, i) => {( d['TN']); return y(d['TN'])})
-                .attr('cx', (d, i) => {return wind.margin + x(dates[i])})
-                .attr('r', 2)
-                .attr('fill', 'teal')
+        function build_graph(data){
+            let n4 = find_col(data, 'TN')
 
-        
-        
-        var map = L.map('map').setView([ 41.024108551696095, -83.68860776599949], 17);
+            let min_date = d3.min(data, (d)=> d.visitDate)
+            let max_date = d3.max(data, (d)=> d.visitDate)
+
+            let min = d3.min(n4)
+            let max = d3.max(n4)
+
+            data = d3.filter(data, (d) => d['TN'] != '')
+            console.log(data.columns)
+
+            let x = d3.scaleTime()
+                        .domain([min_date, max_date])
+                        .range([wind.margin, wind.width - wind.margin])
+            
+            let y = d3.scaleLinear()
+                    .domain([min, max])
+                    .range([wind.height - wind.margin, wind.margin])
+            
+            let gx = svg.append("g")
+                .attr("transform", `translate(${wind.margin}, ${wind.height - wind.margin})`)
+                .call(d3.axisBottom(x))
+
+            let gy = svg.append("g")
+                .attr("transform", `translate(${wind.margin}, 0)`)
+                .call(d3.axisLeft(y))
+            
+            let dots = svg.append('g')
+                .selectAll('circle')
+                .data(water)
+                .join('circle')
+                    .attr('cy', (d, i) => {( d['TN']); return y(d['TN'])})
+                    .attr('cx', (d) => {return wind.margin + x(d['visitDate'])})
+                    .attr('r', 2)
+                    .attr('fill', 'teal')
+
+
+            function update_graph(data){
+                console.log(data) 
+                let n4 = find_col(data, 'TN')
+
+                min_date = d3.min(data, (d)=> d.visitDate)
+                max_date = d3.max(data, (d)=> d.visitDate)
+
+                console.log(min_date)
+                console.log(max_date)
+                console.log(data[0])
+
+                let min = d3.min(n4)
+                let max = d3.max(n4)
+                data = d3.filter(data, (d) => d['TN'] != '')
+
+                x = d3.scaleTime()
+                        .domain([min_date, max_date])
+                        .range([wind.margin, wind.width - wind.margin])
+
+                gx.transition()
+                        .duration(500)
+                        .attr("transform", `translate(${wind.margin}, ${wind.height - wind.margin})`)
+                        .call(d3.axisBottom(x))
+
+                y = d3.scaleLinear()
+                    .domain([min, max])
+                    .range([wind.height - wind.margin, wind.margin])
+
+                gy.transition()
+                        .duration(500)
+                        .attr("transform", `translate(${wind.margin}, 0)`)
+                        .call(d3.axisLeft(y))
+
+            }
+
+            // get selection for map
+            d3.select("#map_select")
+                .on('change', function(event, d){
+                    // get option selected
+                    selected = d3.select(this).property("value")
+                    console.log(selected) 
+                    svg.selectAll('.events').remove() 
+                    update_graph(cvs_files[selected].data)
+                    data = cvs_files[selected].data
+            })
+        }
+
+
+       var map = L.map('map').setView([ 41.024108551696095, -83.68860776599949], 16);
+
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
-        mid.append(svg.node())
+        console.log(data[0].x, data[0].y)
+        var circle = L.marker([data[0].y, data[0].x]).addTo(map)
+
+        graph.append(svg.node())
+
      </script>
 </body>
 </html>
