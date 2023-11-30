@@ -7,14 +7,19 @@
         <script src="d3.v7.js"></script>
         <title>Start Page</title>
         <script>
+            // soil mdl columns and replacment values
             const soil_mdls = [10, 50, 0.32, 0.11, 3.3, 0.95, 0.91, 0.97, 0.2, 0.4, 1.0]
             const soil_cols = ['TP', 'TN', 'm3.P', 'm3.Fe', 'm3.Al', 'm3.Ca', 'm3.Mg', 'm3.K', 'wEX.P', 'wEX.NH3', 'wEX.NOx']
             
+            // water mdl columns and replacment values
             const wtr_mdls = [0.01, 0.02, 0.05, 0.015, 0.075]
             const wtr_cols = ['disPO4', 'disNH4', 'disNO3','TP', 'TN']
 
-            const coor_map = {lat:41.024108551696095, long: -83.68860776599949, zoom:16, zoomin:18}
+            // map coordinates and standard zoom
+            const coor_map = {lat:41.024108551696095, long: -83.68860776599949, zoom:15, zoomin:19, r:7}
             const wind = {width : window.innerWidth/2 - 50, height : window.innerHeight/2, margin : 30}
+
+            const seq_col = ["#e66101", "#fdb863", "#f7f7f7", "#b2abd2", "#5e3c99"]
 
         </script>
     </head>
@@ -36,10 +41,12 @@
 
         let cvs_files = {"water": {"data": water, "mdl_cols":wtr_cols, "mdl_vals": wtr_mdls},
                         "soil":{"data": soil, "mdl_cols":soil_cols, "mdl_vals": soil_mdls}}
+
         let cvs_names = ['water', 'soil']
         let defualt = "water"
         let selected = defualt
         let data = cvs_files[defualt].data
+        let current_chem = 'm3.P'
 
         //Header --------------------------------------------------------------------------------------------------------------------
         let imgs = d3.select('#title')
@@ -77,7 +84,7 @@
                 .attr("name", 'map_select')
         
       
-         // add options to map seletion dropdown
+         // add options to map seletion dropdown --------------------------------------------------------------------------------------
          var nav_drp = map_drop.selectAll()
                             .data(cvs_names)
                             .join(
@@ -97,8 +104,8 @@
                 .attr("name", 'loc_select')
 
         let loc_names = d3.groups(data, (d) => d.locName)
-        // add options to map seletion dropdown
 
+        // add options to map seletion dropdown ------------------------------------------------------------------------------------
         loc_drop.append('option').text('All Locations').attr("value", true)
         var nav_drp = loc_drop.selectAll()
                             .data(loc_names)
@@ -108,7 +115,7 @@
                             .attr("value", (d) => d[0])
                         )
         
-        // Add Copy Right
+        // Add Copy Right -----------------------------------------------------------------------------------------------------------
         let attribution = navbar.selectAll('ul')
                             .append('li')
                                 .attr('class', 'copyright')
@@ -128,7 +135,8 @@
 
         // find date
         // inputs: data
-        // returns: an array that holds three array containing all the year, months and days
+        // returns: converts visit date into date objects
+        //============================================================================================================================
         function format_date(data){
             for(var i = 0; i < data.length; i++){
                 let date = data[i].visitDate.substring(0,4) + "-" 
@@ -138,25 +146,30 @@
             }
         }
 
-
-        function find_col(data, column){
+         // convert_col
+        // inputs: data, column
+        // returns: nothing converts all numbers in a column from string to number format
+        //=============================================================================================================================
+        function convert_col(data, column){
             let numbers = []
             for(var i = 0; i < data.length; i++){
                 let element = data[i][column];
-                numbers.push(Number(element))
-             
+                data[i][column] = Number(element)
             }
-            return numbers
         }
 
-        function remove_MDLs(data, mdls, columns){
+        
+        // remove_MDLs
+        // inputs: data, mdls, column
+        // returns: nothing converts strings '<MDL' into mdl values
+        //=============================================================================================================================
+       function remove_MDLs(data, mdls, columns){
             for(var i = 0; i < data.length; i++){
                 for(var j = 0; j < mdls.length; j++){
                     if(data[i][columns[j]] != null){
-                        data[i][columns[j]] = data[i][columns[j]].replaceAll(" ", "")
-                        if(data[i][columns[j]] == "<MDL"){
-                        data[i][columns[j]] = mdls[j]
-                    }
+                            if(data[i][columns[j]] == "<MDL"){
+                                data[i][columns[j]] = mdls[j]
+                        }
                     data[i][columns[j]] = Number(data[i][columns[j]])
                     }
                     
@@ -164,7 +177,11 @@
             }
         }
 
-        function clean_data(){
+        // clean_data
+        // inputs: data, column
+        // returns: cleans data files and puts everything in proper format
+        //=============================================================================================================================
+       function clean_data(){
             for(var i = 0; i < cvs_names.length; i++){
                 let file_data = cvs_names[i]
                 format_date(cvs_files[file_data].data)
@@ -172,31 +189,33 @@
             }
         }
 
-        //Add Map ----------------------------------------------------------------------------------------------------------------
-        clean_data();
-        build_graph(cvs_files[selected].data)
-
-
-        function build_graph(data){
-            let n4 = find_col(data, 'TN')
-
+        // build graph
+        // inputs: data
+        // returns: Adds a interactive graph to the website given in put data
+        //=============================================================================================================================s
+            convert_col(data, current_chem)
+            
+            // get latest and recent dates
             let min_date = d3.min(data, (d)=> d.visitDate)
             let max_date = d3.max(data, (d)=> d.visitDate)
 
-            let min = d3.min(n4)
-            let max = d3.max(n4)
+            // get smallest and largest cham value
+            let min_chem = d3.min(data, d => d[current_chem])
+            let max_chem = d3.max(data, d => d[current_chem])
 
-            data = d3.filter(data, (d) => d['TN'] != '')
-            console.log(data.columns)
+            // remove empty cham values
+            data = d3.filter(data, (d) => d[current_chem] != '')
 
+            // create x and y axis elements
             let x = d3.scaleTime()
                         .domain([min_date, max_date])
                         .range([wind.margin, wind.width - wind.margin])
             
             let y = d3.scaleLinear()
-                    .domain([min, max])
+                    .domain([min_chem, max_chem])
                     .range([wind.height - wind.margin, wind.margin])
             
+            // add x and y axis to website div
             let gx = svg.append("g")
                 .attr("transform", `translate(${wind.margin}, ${wind.height - wind.margin})`)
                 .call(d3.axisBottom(x))
@@ -205,62 +224,90 @@
                 .attr("transform", `translate(${wind.margin}, 0)`)
                 .call(d3.axisLeft(y))
             
+            // create and add dots to graph
             let dots = svg.append('g')
                 .selectAll('circle')
-                .data(water)
+                .data(data)
                 .join('circle')
-                    .attr('cy', (d, i) => {( d['TN']); return y(d['TN'])})
+                    .attr('cy', (d) => wind.height - (d[current_chem]))
                     .attr('cx', (d) => {return wind.margin + x(d['visitDate'])})
                     .attr('r', 2)
                     .attr('fill', 'teal')
 
 
+        // update_data
+        // inputs: data
+        // returns: updates graph given interactive
+        //=============================================================================================================================
             function update_graph(data){
-                console.log(data) 
-                let n4 = find_col(data, 'TN')
-
+                // update recent and latest dates
                 min_date = d3.min(data, (d)=> d.visitDate)
                 max_date = d3.max(data, (d)=> d.visitDate)
+                   
+                // update smallest and largest value
+                let min = d3.min(data, d => d[current_chem])
+                let max = d3.max(data, d => d[current_chem])
+                console.log(min, max) 
+                data = d3.filter(data, (d) => d[current_chem] != '')
 
-                console.log(min_date)
-                console.log(max_date)
-                console.log(data[0])
 
-                let min = d3.min(n4)
-                let max = d3.max(n4)
-                data = d3.filter(data, (d) => d['TN'] != '')
-
+                // rebuild x axis
                 x = d3.scaleTime()
                         .domain([min_date, max_date])
                         .range([wind.margin, wind.width - wind.margin])
 
+                // convert original axis to new x axis
                 gx.transition()
                         .duration(500)
                         .attr("transform", `translate(${wind.margin}, ${wind.height - wind.margin})`)
                         .call(d3.axisBottom(x))
 
+                // rebuild y axis
                 y = d3.scaleLinear()
                     .domain([min, max])
                     .range([wind.height - wind.margin, wind.margin])
 
+                // convert original y axis to new y axis
                 gy.transition()
                         .duration(500)
                         .attr("transform", `translate(${wind.margin}, 0)`)
                         .call(d3.axisLeft(y))
 
+
+                dots.selectAll('circle').transition()
+                
+
             }
 
-            // get selection for map
-            d3.select("#map_select")
-                .on('change', function(event, d){
-                    // get option selected
-                    selected = d3.select(this).property("value")
-                    svg.selectAll('.events').remove() 
-                    update_graph(cvs_files[selected].data)
-                    data = cvs_files[selected].data
-            })
-        }
 
+        
+       //Add Graph ----------------------------------------------------------------------------------------------------------------
+        clean_data();
+
+//=====================================================================================================================================
+ //Add Map ----------------------------------------------------------------------------------------------------------------
+//====================================================================================================================================
+        // calc _clr
+        // inputs: data, chem, r
+        // returns: calculates the color of circle based on chemical average
+        //=============================================================================================================================
+        function calc_clr(data, chem = "TP", r){
+            let mark_color =  seq_col[0]
+            for(var j = 0; j < seq_col.length; j++){
+                    let quant =  d3.quantile(data, j/(seq_col.length-1), d => d[chem])
+
+                    if(r >= quant){
+                        mark_color = seq_col[j]
+                    }
+                    else{
+                        return mark_color
+                    }
+                }
+        }
+        // get_markloc
+        // inputs: data, chem
+        // returns: returns an array of markers with location coordinates
+        //=============================================================================================================================
         function get_markloc(data, chem = "TP"){
             let lat_long = []
             let loc_groups = d3.groups(data, d => d.locName)
@@ -270,7 +317,9 @@
                 let x = d3.median(loc_groups[i][1], d=> d.x)
                 let y = d3.median(loc_groups[i][1], d=> d.y)
                 let r = d3.mean(loc_groups[i][1], d => d[chem])
-                lat_long.push(L.marker([y, x]).bindPopup(str_data))
+                let mark_color = calc_clr(data, chem, r)
+                lat_long.push(L.circleMarker([y, x], {r:coor_map.r, color:mark_color}).bindPopup(str_data))
+                lat_long.push(L.marker([y, x], {color:mark_color}).bindPopup(str_data))
                 
              }
              return lat_long
@@ -291,16 +340,22 @@
                 .on('change', function(event, d){
                     // get option selected
                     map.removeLayer(mark_group)
+                    let lat = coor_map.lat
+                    let long = coor_map.long
+                    let zoom = coor_map.zoom
                     selected = d3.select(this).property("value")
-                    console.log(selected) 
+
                     data = cvs_files[selected].data 
                     data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
 
                     markers = get_markloc(data, chem)
                     
-
+                    map.setView([lat, long], zoom)
                     mark_group = L.layerGroup(markers)
                     mark_group.addTo(map);
+
+                    update_graph(data)
+
             })
 
             // add markers for location filter
@@ -328,6 +383,10 @@
 
                          for(var i = 0; i < filt_data.length; i++){
                             let str_data = filt_data[i].locName + "\n"  + data[i].notes
+                            let colr = calc_clr(data, chem, data[i][chem])
+                            markers.push(L.circle([filt_data[i].y, filt_data[i].x], 
+                                        {radius:coor_map.r, color:colr}).bindPopup(str_data))
+
                             markers.push(L.marker([filt_data[i].y, filt_data[i].x]).bindPopup(str_data))
                          }
                     }
@@ -337,8 +396,13 @@
             })
 
         
+        
+        function onclick(e){
+            map.setView([coor_map.lat, coor_map.long], coor_map.zoom)
+        }
+        map.on('click', onclick);
 
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
             maxZoom: 20,
             minZoom: 15,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
