@@ -98,7 +98,7 @@
         let loc_names = d3.groups(data, (d) => d.locName)
         // add options to map seletion dropdown
 
-        loc_drop.append('option').text('All Locations').attr("value", data)
+        loc_drop.append('option').text('All Locations').attr("value", true)
         var nav_drp = loc_drop.selectAll()
                             .data(loc_names)
                             .join(
@@ -260,14 +260,27 @@
             })
         }
 
+        function get_markloc(data){
+            let lat_long = []
+            let loc_groups = d3.groups(data, d => d.locName)
 
-       var map = L.map('map').setView([ 41.024108551696095, -83.68860776599949], 17);
+            for(var i = 0; i < loc_groups.length; i++){
+                let str_data = loc_groups[i][0]
+                let x = d3.median(loc_groups[i][1], d=> d.x)
+                let y = d3.median(loc_groups[i][1], d=> d.y)
+                lat_long.push(L.marker([y, x]).bindPopup(str_data))
+                
+                
+             }
+             return lat_long
+        }
+
+       var map = L.map('map').setView([ 41.024108551696095, -83.68860776599949], 16.25);
 
         let markers = []
-        for(var i = 0; i < data.length; i++){
-            let str_data = data[i].locName + "\n"  + data[i].notes
-            markers.push(L.circle([data[i].y, data[i].x], {radius:3}).bindPopup(str_data))
-        }
+        markers = get_markloc(data)
+        
+
         let mark_group = L.layerGroup(markers)
         mark_group.addTo(map);
 
@@ -275,37 +288,41 @@
         d3.select("#map_select")
                 .on('change', function(event, d){
                     // get option selected
+                    map.removeLayer(mark_group)
                     selected = d3.select(this).property("value")
                     console.log(selected) 
                     data = cvs_files[selected].data 
                     data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
-                    map.removeLayer(mark_group)
 
-                    markers = []
-                    for(var i = 0; i < data.length; i++){
-                        let str_data = data[i].locName + "\n"  + data[i].notes
-                        markers.push(L.marker([data[i].y, data[i].x], {}).bindPopup(str_data))
-                    }
+                    markers = get_markloc(data)
+                    
 
                     mark_group = L.layerGroup(markers)
                     mark_group.addTo(map);
             })
 
+            // add markers for location filter
             d3.select("#loc_select")
                 .on('change', function(event, d){
                     // get option selected
-                    selected = d3.select(this).property("value")
-                    console.log(selected) 
-                    let filt_data = d3.filter(data, d => d.locName == selected)
-                    filt_data = d3.filter(filt_data, (d) => d.x != '#N/A' && d.y != '#N/A')
                     map.removeLayer(mark_group)
-
+                    selected = d3.select(this).property("value")
+                    let filt_data = data
                     markers = []
-                    for(var i = 0; i < filt_data.length; i++){
-                        let str_data = filt_data[i].locName + "\n"  + data[i].notes
-                        markers.push(L.marker([filt_data[i].y, filt_data[i].x], {}).bindPopup(str_data))
+                    if(selected == "true"){
+                        
+                         console.log(filt_data) 
+                         markers = get_markloc(filt_data)
                     }
-
+                    else
+                    {
+                         filt_data = d3.filter(data, d => d.locName == selected)
+                         filt_data = d3.filter(filt_data, (d) => d.x != '#N/A' && d.y != '#N/A')
+                         for(var i = 0; i < filt_data.length; i++){
+                            let str_data = filt_data[i].locName + "\n"  + data[i].notes
+                            markers.push(L.marker([filt_data[i].y, filt_data[i].x]).bindPopup(str_data))
+                         }
+                    }
                     mark_group = L.layerGroup(markers)
                     mark_group.addTo(map);
             })
