@@ -16,10 +16,10 @@
             const wtr_cols = ['disPO4', 'disNH4', 'disNO3','TP', 'TN']
 
             // map coordinates and standard zoom
-            const coor_map = {lat:41.024108551696095, long: -83.68860776599949, zoom:15, zoomin:19, r:7}
+            const coor_map = {lat:41.024108551696095, long: -83.68860776599949, zoom:15, zoomin:19, r:10}
             const wind = {width : window.innerWidth/2 - 50, height : window.innerHeight/2, margin : 30}
 
-            const seq_col = ["#e66101", "#fdb863", "#f7f7f7", "#b2abd2", "#5e3c99"]
+            const seq_col = ["#f7f7f7", "#cccccc", "#969696", "#636363", "#252525"]
 
         </script>
     </head>
@@ -45,7 +45,7 @@
         let cvs_names = ['water', 'soil']
         let defualt = "water"
         let selected = defualt
-        let data = cvs_files[defualt].data
+        let data = cvs_files[selected].data
         let current_chem = 'TN'
 
         //Header --------------------------------------------------------------------------------------------------------------------
@@ -105,7 +105,7 @@
 
         let loc_names = d3.groups(data, (d) => d.locName)
 
-        // add options to map seletion dropdown ------------------------------------------------------------------------------------
+        // add location options to dropdown ------------------------------------------------------------------------------------
         loc_drop.append('option').text('All Locations').attr("value", true)
         var nav_drp = loc_drop.selectAll()
                             .data(loc_names)
@@ -114,7 +114,26 @@
                             .text(d => d[0] )
                             .attr("value", (d) => d[0])
                         )
+ // ---------------------------------------------------------------------------------------------------------------------------------
+        let chem_label = nav_btns.append("label")
+                .attr("for", "chem_select")
+                .attr("font-size", 16)
+                .text("Chemical: ")
         
+        let chem_drop = nav_btns.append("select")
+                .attr("id", `chem_select`)
+                .attr("name", 'chem_select')
+
+        let chem_names = cvs_files[selected].mdl_cols
+
+        // add location options to dropdown ------------------------------------------------------------------------------------
+        var chem_drp = chem_drop.selectAll()
+                            .data(chem_names)
+                            .join(
+                                enter => enter.append('option')
+                            .text((d, i) => chem_names[chem_names.length - i - 1] )
+                            .attr("value",(d, i) => chem_names[chem_names.length - i - 1] )    
+                            )   
         // Add Copy Right -----------------------------------------------------------------------------------------------------------
         let attribution = navbar.selectAll('ul')
                             .append('li')
@@ -232,7 +251,7 @@
                 .data(data)
                 .join('circle')
                     .attr('cy', (d) =>  {return y(d[current_chem])})
-                    .attr('cx', (d) => {console.log('this', x(d.visitDate)); return wind.margin + x(d['visitDate'])})
+                    .attr('cx', (d) => { return wind.margin + x(d['visitDate'])})
                     .attr('r', 2)
                     .attr('fill', 'teal')
 
@@ -318,20 +337,23 @@
                 let str_data = loc_groups[i][0]
                 let x = d3.median(loc_groups[i][1], d=> d.x)
                 let y = d3.median(loc_groups[i][1], d=> d.y)
-                let r = d3.mean(loc_groups[i][1], d => d[chem])
-                let mark_color = calc_clr(data, chem, r)
-                lat_long.push(L.circleMarker([y, x], {r:coor_map.r, color:mark_color}).bindPopup(str_data))
+
+                let color = d3.mean(loc_groups[i][1], d => d[chem])
+                let max_val = d3.max(loc_groups[i][1], d => d[chem])
+                let r = (color/max_val) * coor_map.r 
+
+                let mark_color = calc_clr(data, chem, color)
+                lat_long.push(L.circleMarker([y, x], {radius:r, color:mark_color}).bindPopup(str_data))
                 lat_long.push(L.marker([y, x], {color:mark_color}).bindPopup(str_data))
                 
              }
              return lat_long
         }
 
-       var map = L.map('map').setView([ coor_map.lat, coor_map.long], coor_map.zoom);
+        var map = L.map('map').setView([ coor_map.lat, coor_map.long], coor_map.zoom);
 
         let markers = []
-        let chem = "TP"
-        markers = get_markloc(data, chem)
+        markers = get_markloc(data, current_chem)
         
 
         let mark_group = L.layerGroup(markers)
@@ -350,7 +372,7 @@
                     data = cvs_files[selected].data 
                     data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
 
-                    markers = get_markloc(data, chem)
+                    markers = get_markloc(data, current_chem)
                     
                     map.setView([lat, long], zoom)
                     mark_group = L.layerGroup(markers)
@@ -359,6 +381,26 @@
                     update_graph(data)
 
             })
+
+            d3.select('#chem_select')
+                .on('change', function(event, d){
+                    selected = d3.select(this).property("value")
+                    current_chem = selected
+                    map.removeLayer(mark_group)
+                    let lat = coor_map.lat
+                    let long = coor_map.long
+                    let zoom = coor_map.zoom
+                    
+                    data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
+                    markers = get_markloc(data, current_chem)
+
+                    map.setView([lat, long], zoom)
+                    mark_group = L.layerGroup(markers)
+                    mark_group.addTo(map);
+
+                    update_graph(data)
+
+                })
 
             // add markers for location filter
             d3.select("#loc_select")
@@ -372,7 +414,7 @@
                     let zoom = coor_map.zoom
                     markers = []
                     if(selected == "true"){
-                         markers = get_markloc(filt_data, chem)
+                         markers = get_markloc(filt_data, current_chem)
 
                     }
                     else
@@ -385,7 +427,8 @@
 
                          for(var i = 0; i < filt_data.length; i++){
                             let str_data = filt_data[i].locName + "\n"  + data[i].notes
-                            let colr = calc_clr(data, chem, data[i][chem])
+                            let colr = calc_clr(data, current_chem, data[i][current_chem])
+
                             markers.push(L.circle([filt_data[i].y, filt_data[i].x], 
                                         {radius:coor_map.r, color:colr}).bindPopup(str_data))
 
@@ -394,13 +437,13 @@
                     }
                     map.setView([lat, long], zoom)
                     mark_group = L.layerGroup(markers)
-                    mark_group.addTo(map);
+                    mark_group.addTo(map).on('click', onclick);
             })
 
         
         
-        function onclick(e){
-            map.setView([coor_map.lat, coor_map.long], coor_map.zoom)
+        function onclick(e){  
+            map.setView([e.latlng.lat, e.latlng.lng], coor_map.zoomin)
         }
         map.on('click', onclick);
 
