@@ -211,7 +211,8 @@
         // build graph
         // inputs: data
         // returns: Adds a interactive graph to the website given in put data
-        //=============================================================================================================================s
+        //=============================================================================================================================
+        /*
             convert_col(data, current_chem)
             
             // get latest and recent dates
@@ -255,12 +256,60 @@
                     .attr('r', 2)
                     .attr('fill', 'teal')
 
+        */
+
+        // Add X axis
+        var x = d3.scaleTime()
+          .range([ 0, wind.width ]);
+
+        var xAxis = svg.append("g")
+          .attr("transform", "translate(0," + wind.height + ")")
+
+        // Add Y axis
+        var y = d3.scaleLinear()
+          .range([ wind.height, 0]);
+
+        var yAxis = svg.append("g")
+          .attr("class", "myYaxis")
+
+        // Add the line
+        var line = svg.append("path")
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
 
         // update_data
         // inputs: data
         // returns: updates graph given interactive
         //=============================================================================================================================
-            function update_graph(data){
+        // Dropdown change event
+        function update_chart(data, chem) {
+            // Create a update selection: bind to the new data
+            var update = line
+              .datum(data)
+
+            // Update the X axis
+            //x.domain(d3.extent(data, function(d) { return d3.timeParse("%Y%m%d")(d.visitDate); }))
+            //xAxis.call(d3.axisBottom(x));
+
+            // Update the Y axis
+            y.domain([0, d3.max(data, function(d) { return +d.chem; })]);
+            yAxis.transition().duration(1000).call(d3.axisLeft(y));
+
+            // Update the line
+           /* update
+              .transition()
+              .duration(1000)
+              .attr("d", d3.line()
+                .x(function(d) { return x(d3.timeParse("%Y%m%d")(d.date)); })
+                .y(function(d) { return y(+d.TP); })
+              )*/
+        }
+        
+        // Initialize the plot with the first dataset
+        update_chart(data)
+
+           /* function update_graph(data){
                 // update recent and latest dates
                 min_date = d3.min(data, (d)=> d.visitDate)
                 max_date = d3.max(data, (d)=> d.visitDate)
@@ -297,9 +346,8 @@
 
                 dots.selectAll('circle').transition()
                 
-
             }
-
+            */
 
         
        //Add Graph ----------------------------------------------------------------------------------------------------------------
@@ -378,7 +426,7 @@
                     mark_group = L.layerGroup(markers)
                     mark_group.addTo(map);
 
-                    update_graph(data)
+                    //update_graph(data)
 
             })
 
@@ -398,7 +446,7 @@
                     mark_group = L.layerGroup(markers)
                     mark_group.addTo(map);
 
-                    update_graph(data)
+                    //update_graph(data)
 
                 })
 
@@ -438,6 +486,8 @@
                     map.setView([lat, long], zoom)
                     mark_group = L.layerGroup(markers)
                     mark_group.addTo(map).on('click', onclick);
+
+                    //update_chart(selectedOption)
             })
 
         
