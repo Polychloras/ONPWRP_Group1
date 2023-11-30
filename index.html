@@ -38,7 +38,7 @@
         let cvs_names = ['water', 'soil']
         let defualt = "water"
         let selected = defualt
-        
+        let data = cvs_files[defualt].data
 
         //Header --------------------------------------------------------------------------------------------------------------------
         let imgs = d3.select('#title')
@@ -83,6 +83,28 @@
                                 enter => enter.append('option')
                             .text(d => d)
                             .attr("value", (d) => d)
+                        )
+        
+
+        let loc_label = nav_btns.append("label")
+                .attr("for", "loc_select")
+                .attr("font-size", 16)
+                .text("Sample Location: ")
+        
+        let loc_drop = nav_btns.append("select")
+                .attr("id", `loc_select`)
+                .attr("name", 'loc_select')
+
+        let loc_names = d3.groups(data, (d) => d.locName)
+        // add options to map seletion dropdown
+
+        loc_drop.append('option').text('All Locations').attr("value", data)
+        var nav_drp = loc_drop.selectAll()
+                            .data(loc_names)
+                            .join(
+                                enter => enter.append('option')
+                            .text(d => d[0] )
+                            .attr("value", (d) => d[0])
                         )
         
         // Add Copy Right
@@ -151,7 +173,6 @@
 
         //Add Map ----------------------------------------------------------------------------------------------------------------
         clean_data();
-        let data = cvs_files[selected].data
         build_graph(cvs_files[selected].data)
 
 
@@ -240,11 +261,12 @@
         }
 
 
-       var map = L.map('map').setView([ 41.024108551696095, -83.68860776599949], 16);
+       var map = L.map('map').setView([ 41.024108551696095, -83.68860776599949], 17);
 
         let markers = []
         for(var i = 0; i < data.length; i++){
-            markers.push(L.marker([data[i].y, data[i].x]))
+            let str_data = data[i].locName + "\n"  + data[i].notes
+            markers.push(L.circle([data[i].y, data[i].x], {radius:3}).bindPopup(str_data))
         }
         let mark_group = L.layerGroup(markers)
         mark_group.addTo(map);
@@ -255,23 +277,44 @@
                     // get option selected
                     selected = d3.select(this).property("value")
                     console.log(selected) 
-                    data = cvs_files[selected].data
+                    data = cvs_files[selected].data 
                     data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
                     map.removeLayer(mark_group)
 
                     markers = []
                     for(var i = 0; i < data.length; i++){
-                        console.log(i, data[i].x, data[i].y)
-                        markers.push(L.marker([data[i].y, data[i].x]))
+                        let str_data = data[i].locName + "\n"  + data[i].notes
+                        markers.push(L.marker([data[i].y, data[i].x], {}).bindPopup(str_data))
                     }
+
                     mark_group = L.layerGroup(markers)
                     mark_group.addTo(map);
             })
 
+            d3.select("#loc_select")
+                .on('change', function(event, d){
+                    // get option selected
+                    selected = d3.select(this).property("value")
+                    console.log(selected) 
+                    let filt_data = d3.filter(data, d => d.locName == selected)
+                    filt_data = d3.filter(filt_data, (d) => d.x != '#N/A' && d.y != '#N/A')
+                    map.removeLayer(mark_group)
+
+                    markers = []
+                    for(var i = 0; i < filt_data.length; i++){
+                        let str_data = filt_data[i].locName + "\n"  + data[i].notes
+                        markers.push(L.marker([filt_data[i].y, filt_data[i].x], {}).bindPopup(str_data))
+                    }
+
+                    mark_group = L.layerGroup(markers)
+                    mark_group.addTo(map);
+            })
+
+        
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-            minZoom: 16,
+            maxZoom: 20,
+            minZoom: 15,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             layers: [mark_group]
         }).addTo(map);
