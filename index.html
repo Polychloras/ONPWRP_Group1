@@ -33,7 +33,6 @@
         let water = await d3.csv("Midden_Oakwoods_Data_Water.csv"); 
         let soil = await d3.csv("Midden_Oakwoods_Data_Soil.csv"); 
         let images = ["ColdWater", "ParkDistrict", "Provider"];
-
         let cvs_files = {"water": {"data": water, "mdl_cols":wtr_cols, "mdl_vals": wtr_mdls},
                         "soil":{"data": soil, "mdl_cols":soil_cols, "mdl_vals": soil_mdls}}
         let cvs_names = ['water', 'soil']
@@ -258,7 +257,7 @@
                     svg.selectAll('.events').remove() 
                     update_graph(cvs_files[selected].data)
                     data = cvs_files[selected].data
-                    // testing testing
+                    
             })
         }
 
@@ -271,12 +270,15 @@
                 let x = d3.median(loc_groups[i][1], d=> d.x)
                 let y = d3.median(loc_groups[i][1], d=> d.y)
                 let r = d3.mean(loc_groups[i][1], d => d[chem])
-                lat_long.push(L.marker([y, x]).bindPopup(str_data))
+                lat_long.push(L.marker([y, x]).bindPopup(str_data).on('click', onClick))
                 
              }
+             
              return lat_long
         }
-
+        function onClick(e) {
+        console.log(e.target.getPopup().getContent());
+        }
        var map = L.map('map').setView([ coor_map.lat, coor_map.long], coor_map.zoom);
 
         let markers = []
