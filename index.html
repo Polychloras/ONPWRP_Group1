@@ -13,6 +13,7 @@
             const wtr_mdls = [0.01, 0.02, 0.05, 0.015, 0.075]
             const wtr_cols = ['disPO4', 'disNH4', 'disNO3','TP', 'TN']
 
+            const coor_map = {lat:41.024108551696095, long: -83.68860776599949, zoom:16, zoomin:18}
             const wind = {width : window.innerWidth/2 - 50, height : window.innerHeight/2, margin : 30}
 
         </script>
@@ -260,7 +261,7 @@
             })
         }
 
-        function get_markloc(data){
+        function get_markloc(data, chem = "TP"){
             let lat_long = []
             let loc_groups = d3.groups(data, d => d.locName)
 
@@ -268,17 +269,18 @@
                 let str_data = loc_groups[i][0]
                 let x = d3.median(loc_groups[i][1], d=> d.x)
                 let y = d3.median(loc_groups[i][1], d=> d.y)
+                let r = d3.mean(loc_groups[i][1], d => d[chem])
                 lat_long.push(L.marker([y, x]).bindPopup(str_data))
-                
                 
              }
              return lat_long
         }
 
-       var map = L.map('map').setView([ 41.024108551696095, -83.68860776599949], 16.25);
+       var map = L.map('map').setView([ coor_map.lat, coor_map.long], coor_map.zoom);
 
         let markers = []
-        markers = get_markloc(data)
+        let chem = "TP"
+        markers = get_markloc(data, chem)
         
 
         let mark_group = L.layerGroup(markers)
@@ -294,7 +296,7 @@
                     data = cvs_files[selected].data 
                     data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
 
-                    markers = get_markloc(data)
+                    markers = get_markloc(data, chem)
                     
 
                     mark_group = L.layerGroup(markers)
@@ -308,21 +310,28 @@
                     map.removeLayer(mark_group)
                     selected = d3.select(this).property("value")
                     let filt_data = data
+                    let lat = coor_map.lat
+                    let long = coor_map.long
+                    let zoom = coor_map.zoom
                     markers = []
                     if(selected == "true"){
-                        
-                         console.log(filt_data) 
-                         markers = get_markloc(filt_data)
+                         markers = get_markloc(filt_data, chem)
+
                     }
                     else
                     {
                          filt_data = d3.filter(data, d => d.locName == selected)
                          filt_data = d3.filter(filt_data, (d) => d.x != '#N/A' && d.y != '#N/A')
+                         long = d3.median(filt_data, (d) => d.x)
+                         lat = d3.median(filt_data, (d) => d.y)
+                         zoom = coor_map.zoomin
+
                          for(var i = 0; i < filt_data.length; i++){
                             let str_data = filt_data[i].locName + "\n"  + data[i].notes
                             markers.push(L.marker([filt_data[i].y, filt_data[i].x]).bindPopup(str_data))
                          }
                     }
+                    map.setView([lat, long], zoom)
                     mark_group = L.layerGroup(markers)
                     mark_group.addTo(map);
             })
