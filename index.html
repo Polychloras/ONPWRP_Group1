@@ -46,7 +46,7 @@
         let defualt = "water"
         let selected = defualt
         let data = cvs_files[defualt].data
-        let current_chem = 'm3.P'
+        let current_chem = 'TN'
 
         //Header --------------------------------------------------------------------------------------------------------------------
         let imgs = d3.select('#title')
@@ -202,9 +202,10 @@
             // get smallest and largest cham value
             let min_chem = d3.min(data, d => d[current_chem])
             let max_chem = d3.max(data, d => d[current_chem])
+            
 
             // remove empty cham values
-            data = d3.filter(data, (d) => d[current_chem] != '')
+            data = d3.filter(data, (d) => d[current_chem])
 
             // create x and y axis elements
             let x = d3.scaleTime()
@@ -225,12 +226,13 @@
                 .call(d3.axisLeft(y))
             
             // create and add dots to graph
+            
             let dots = svg.append('g')
                 .selectAll('circle')
                 .data(data)
                 .join('circle')
-                    .attr('cy', (d) => wind.height - (d[current_chem]))
-                    .attr('cx', (d) => {return wind.margin + x(d['visitDate'])})
+                    .attr('cy', (d) =>  {return y(d[current_chem])})
+                    .attr('cx', (d) => {console.log('this', x(d.visitDate)); return wind.margin + x(d['visitDate'])})
                     .attr('r', 2)
                     .attr('fill', 'teal')
 
@@ -247,7 +249,7 @@
                 // update smallest and largest value
                 let min = d3.min(data, d => d[current_chem])
                 let max = d3.max(data, d => d[current_chem])
-                console.log(min, max) 
+                 
                 data = d3.filter(data, (d) => d[current_chem] != '')
 
 
