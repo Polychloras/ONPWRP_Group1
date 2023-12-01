@@ -318,7 +318,6 @@
         function calc_clr(data, chem = "TP", r){
             let mark_color =  seq_col[0]
             let col_ind = 0
-            data = d3.filter(data, d => d)
             // seperate based on number of color bins
             for(var j = 0; j < seq_col.length; j++){
                     // color based on quantile that data chemical falls under
@@ -327,7 +326,7 @@
                     // find quantile that data element falls under
                     if(r >= quant){
                         mark_color = seq_col[j]
-                        col_ind +=1
+                        col_ind = j
                     }
                     // once found return color and quantile
                     else{
