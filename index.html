@@ -370,6 +370,17 @@
                     selected = d3.select(this).property("value")
 
                     data = cvs_files[selected].data 
+                    
+                    //change element in chem drop down
+                    chem_names = cvs_files[selected].mdl_cols
+                    chem_drp.remove()
+                    chem_drp= chem_drop.selectAll()
+                            .data(chem_names)
+                            .join(
+                                enter => enter.append('option')
+                            .text((d, i) => chem_names[chem_names.length - i - 1] )
+                            .attr("value",(d, i) => chem_names[chem_names.length - i - 1] )    
+                            ) 
                     data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
 
                     markers = get_markloc(data, current_chem)
