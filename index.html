@@ -12,8 +12,8 @@
             const soil_cols = ['TP', 'TN', 'm3.P', 'm3.Fe', 'm3.Al', 'm3.Ca', 'm3.Mg', 'm3.K', 'wEX.P', 'wEX.NH3', 'wEX.NOx']
             
             // water mdl columns and replacment values
-            const wtr_mdls = [0.01, 0.02, 0.05, 0.015, 0.075]
-            const wtr_cols = ['disPO4', 'disNH4', 'disNO3','TP', 'TN']
+            const wtr_mdls = [ 0.075, 0.015, 0.05,0.02, 0.01 ]
+            const wtr_cols = ['TN', 'TP', 'disNO3','disNH4' , 'disPO4' ]
 
             // map coordinates and standard zoom
             const coor_map = {lat:41.024108551696095, long: -83.68860776599949, zoom:15, zoomin:19, r:10}
@@ -131,8 +131,8 @@
                             .data(chem_names)
                             .join(
                                 enter => enter.append('option')
-                            .text((d, i) => chem_names[chem_names.length - i - 1] )
-                            .attr("value",(d, i) => chem_names[chem_names.length - i - 1] )    
+                            .text((d, i) => chem_names[i] )
+                            .attr("value",(d, i) => chem_names[i] )    
                             )   
         // Add Copy Right -----------------------------------------------------------------------------------------------------------
         let attribution = navbar.selectAll('ul')
@@ -340,10 +340,10 @@
 
                 let color = d3.mean(loc_groups[i][1], d => d[chem])
                 let max_val = d3.max(loc_groups[i][1], d => d[chem])
-                let r = (color/max_val) * coor_map.r 
+                let r = ((color/max_val) + 0.5) * coor_map.r 
 
                 let mark_color = calc_clr(data, chem, color)
-                lat_long.push(L.circleMarker([y, x], {radius:r, color:mark_color}).bindPopup(str_data))
+                lat_long.push(L.circleMarker([y, x], {radius:r, color:mark_color}))
                 lat_long.push(L.marker([y, x], {color:mark_color}).bindPopup(str_data))
                 
              }
@@ -370,7 +370,7 @@
                     selected = d3.select(this).property("value")
 
                     data = cvs_files[selected].data 
-                    
+
                     //change element in chem drop down
                     chem_names = cvs_files[selected].mdl_cols
                     chem_drp.remove()
@@ -378,9 +378,10 @@
                             .data(chem_names)
                             .join(
                                 enter => enter.append('option')
-                            .text((d, i) => chem_names[chem_names.length - i - 1] )
-                            .attr("value",(d, i) => chem_names[chem_names.length - i - 1] )    
+                            .text((d, i) => chem_names[i] )
+                            .attr("value",(d, i) => chem_names[i] )    
                             ) 
+
                     data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
 
                     markers = get_markloc(data, current_chem)
@@ -441,7 +442,7 @@
                             let colr = calc_clr(data, current_chem, data[i][current_chem])
 
                             markers.push(L.circle([filt_data[i].y, filt_data[i].x], 
-                                        {radius:coor_map.r, color:colr}).bindPopup(str_data))
+                                        {radius:coor_map.r, color:colr}))
 
                             markers.push(L.marker([filt_data[i].y, filt_data[i].x]).bindPopup(str_data))
                          }
