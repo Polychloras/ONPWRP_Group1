@@ -7,12 +7,9 @@ header {
   }
 
 
-ul[class = 'navbar']{
-    list-style-type: none;
-    margin : 0;
-    padding : 5px;
-    overflow:hidden;
-    background-image:linear-gradient(to bottom right, #7ECA9C, #CCFFBD);
+div[class = 'legend']{
+    float:left;
+    background-color:#7ECA9C;
 }
 
 li[class ='navbar']{
@@ -80,6 +77,10 @@ div[class = 'graph']{
     float:initial;
 }
 
+div[class = 'bins']{
+    float:left;
+}
+
 div[class = 'copyright']{
     float:none;
 
@@ -91,6 +92,6 @@ div[class = 'copyright']{
       left: 0%;
       right:0%;
       width: 50vw;
-      height: 400px;
+      height:80vh;
       float:left;
      }

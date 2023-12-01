@@ -8,8 +8,8 @@
         <title>Start Page</title>
         <script>
             // soil mdl columns and replacment values
-            const soil_mdls = [10, 50, 0.32, 0.11, 3.3, 0.95, 0.91, 0.97, 0.2, 0.4, 1.0]
-            const soil_cols = ['TP', 'TN', 'm3.P', 'm3.Fe', 'm3.Al', 'm3.Ca', 'm3.Mg', 'm3.K', 'wEX.P', 'wEX.NH3', 'wEX.NOx']
+            const soil_mdls = [50, 10, 0.32, 0.11, 3.3, 0.95, 0.91, 0.97, 0.2, 0.4, 1.0]
+            const soil_cols = ['TN', 'TP', 'm3.P', 'm3.Fe', 'm3.Al', 'm3.Ca', 'm3.Mg', 'm3.K', 'wEX.P', 'wEX.NH3', 'wEX.NOx']
             
             // water mdl columns and replacment values
             const wtr_mdls = [ 0.075, 0.015, 0.05,0.02, 0.01 ]
@@ -17,7 +17,8 @@
 
             // map coordinates and standard zoom
             const coor_map = {lat:41.024108551696095, long: -83.68860776599949, zoom:15, zoomin:19, r:10}
-            const wind = {width : window.innerWidth/2 - 50, height : window.innerHeight/2, margin : 30}
+            const margin = 30
+            const wind = {width : window.innerWidth/3 + margin, height : window.innerHeight * 0.8 + margin , margin : margin}
 
             const seq_col = ["#f7f7f7", "#cccccc", "#969696", "#636363", "#252525"]
 
@@ -28,11 +29,10 @@
     <div id = "title"></div>
     <div id = "top"></div>
     <div id = "mid">
+        <div id = "legend"></div>
         <div id = "map"></div>
         <div id = graph class = "graph"></div>
     </div>
-    <p></p>
-    <div id = "foot"></div>
   
     <script type = "module">
         let water = await d3.csv("Midden_Oakwoods_Data_Water.csv"); 
@@ -152,6 +152,8 @@
                         .attr('width', wind.width + wind.margin)
                         .attr('height', wind.height + wind.margin)
 
+
+        
         // find date
         // inputs: data
         // returns: converts visit date into date objects
@@ -308,20 +310,30 @@
 //=====================================================================================================================================
  //Add Map ----------------------------------------------------------------------------------------------------------------
 //====================================================================================================================================
+
         // calc _clr
         // inputs: data, chem, r
         // returns: calculates the color of circle based on chemical average
         //=============================================================================================================================
         function calc_clr(data, chem = "TP", r){
             let mark_color =  seq_col[0]
+            let col_ind = 0
+            data = d3.filter(data, d => d)
+            // seperate based on number of color bins
             for(var j = 0; j < seq_col.length; j++){
+                    // color based on quantile that data chemical falls under
                     let quant =  d3.quantile(data, j/(seq_col.length-1), d => d[chem])
-
+                    
+                    // find quantile that data element falls under
                     if(r >= quant){
                         mark_color = seq_col[j]
+                        col_ind +=1
                     }
+                    // once found return color and quantile
                     else{
-                        return mark_color
+
+                        let quant_rad =  d3.quantile(data, (col_ind)/(seq_col.length-1), d => d[chem])
+                        return [mark_color, quant_rad]
                     }
                 }
         }
@@ -331,7 +343,9 @@
         //=============================================================================================================================
         function get_markloc(data, chem = "TP"){
             let lat_long = []
+            data = d3.filter(data, d => d[chem])
             let loc_groups = d3.groups(data, d => d.locName)
+            
 
             for(var i = 0; i < loc_groups.length; i++){
                 let str_data = loc_groups[i][0]
@@ -340,10 +354,12 @@
 
                 let color = d3.mean(loc_groups[i][1], d => d[chem])
                 let max_val = d3.max(loc_groups[i][1], d => d[chem])
-                let r = ((color/max_val) + 0.5) * coor_map.r 
 
-                let mark_color = calc_clr(data, chem, color)
-                lat_long.push(L.circleMarker([y, x], {radius:r, color:mark_color}))
+                let color_rad = calc_clr(data, chem, color)
+                let mark_color = color_rad[0]
+                let rad = ((color_rad[1]/max_val) + 0.5) * coor_map.r
+
+                lat_long.push(L.circleMarker([y, x], {radius:rad, color:mark_color}))
                 lat_long.push(L.marker([y, x], {color:mark_color}).bindPopup(str_data))
                 
              }
@@ -358,6 +374,53 @@
 
         let mark_group = L.layerGroup(markers)
         mark_group.addTo(map);
+
+
+        let bin_values = []
+        for(var j = 0; j < seq_col.length; j++){
+                    // color based on quantile that data chemical falls under
+                    let quant =  d3.quantile(data, j/(seq_col.length-1), d => d[current_chem])
+                    bin_values.push(quant)
+        }
+        
+        let bin_svg = d3.select('#legend')
+                    .append('div')
+                        .attr('class', 'legend')
+                    .append('svg')
+                    .attr('width', wind.margin * 4.5)
+                    .attr('height', window.innerHeight * 0.8)
+                    .append('g')
+
+        let lgd_title = bin_svg
+                        .append('text')
+                            .attr('x', wind.margin/2)
+                            .attr('y', wind.margin)
+                            .text(`Legend`)
+                            .attr("font-weight", "bolder")
+                            .attr("font-size", 25)
+
+        let lgd_dsc =  bin_svg.append('text')
+                            .attr('x', wind.margin/2)
+                            .attr('y', wind.margin * 2)
+                            .text(`${current_chem} mean <= `)
+                            .attr("font-weight", "bold")
+
+        let bins = bin_svg.selectAll('g')
+                        .data(bin_values)
+                        .join('circle')
+                        .attr('cx', wind.margin)
+                        .attr('cy', (d, i) => wind.margin * (i+3))
+                        .attr('r', 10)
+                        .attr('fill', (d, i) => d3.color(seq_col[i]))
+                        .attr('stroke', (d, i) => d3.color(seq_col[seq_col.length - 1]))
+                        
+         let text = bin_svg.selectAll('g')
+                        .data(bin_values)
+                        .join('text')
+                        .attr('x',wind.margin*1.5 )
+                        .attr('y', (d, i) => wind.margin * (i+3.13))
+                        .attr('fill', (d, i) => d3.color(seq_col[seq_col.length]))
+                        .text(d => `${d.toFixed(3)}`)
 
         // get selection for map
         d3.select("#map_select")
@@ -381,7 +444,7 @@
                             .text((d, i) => chem_names[i] )
                             .attr("value",(d, i) => chem_names[i] )    
                             ) 
-
+                    current_chem = chem_names[0]
                     data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
 
                     markers = get_markloc(data, current_chem)
@@ -405,6 +468,39 @@
                     
                     data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
                     markers = get_markloc(data, current_chem)
+                    lgd_dsc.remove()
+                    bins.remove()
+                    text.remove()
+
+                    bin_values = []
+                    for(var j = 0; j < seq_col.length; j++){
+                                // color based on quantile that data chemical falls under
+                                let quant =  d3.quantile(data, j/(seq_col.length-1), d => d[current_chem])
+                                bin_values.push(quant)
+                    }
+
+                    lgd_dsc =  bin_svg.append('text')
+                                        .attr('x', wind.margin/2)
+                                        .attr('y', wind.margin * 2)
+                                        .text(`${current_chem} mean <= `)
+                                        .attr("font-weight", "bold")
+
+                    bins = bin_svg.selectAll('g')
+                                    .data(bin_values)
+                                    .join('circle')
+                                    .attr('cx', wind.margin)
+                                    .attr('cy', (d, i) => wind.margin * (i+3))
+                                    .attr('r', 10)
+                                    .attr('fill', (d, i) => d3.color(seq_col[i]))
+                                    .attr('stroke', (d, i) => d3.color(seq_col[seq_col.length - 1]))
+                                    
+                    text = bin_svg.selectAll('g')
+                                    .data(bin_values)
+                                    .join('text')
+                                    .attr('x',wind.margin*1.5 )
+                                    .attr('y', (d, i) => wind.margin * (i+3.13))
+                                    .attr('fill', (d, i) => d3.color(seq_col[seq_col.length]))
+                                    .text(d => {console.log(d);return `${d.toFixed(3)}`})
 
                     map.setView([lat, long], zoom)
                     mark_group = L.layerGroup(markers)
@@ -439,10 +535,10 @@
 
                          for(var i = 0; i < filt_data.length; i++){
                             let str_data = filt_data[i].locName + "\n"  + data[i].notes
-                            let colr = calc_clr(data, current_chem, data[i][current_chem])
+                            let col_rad = calc_clr(data, current_chem, data[i][current_chem])
 
                             markers.push(L.circle([filt_data[i].y, filt_data[i].x], 
-                                        {radius:coor_map.r, color:colr}))
+                                        {radius:coor_map.r, color:col_rad[0]}))
 
                             markers.push(L.marker([filt_data[i].y, filt_data[i].x]).bindPopup(str_data))
                          }
@@ -452,7 +548,6 @@
                     mark_group.addTo(map).on('click', onclick);
             })
 
-        
         
         function onclick(e){  
             map.setView([e.latlng.lat, e.latlng.lng], coor_map.zoomin)
@@ -468,8 +563,7 @@
 
         
         graph.append(svg.node())
-
-        
+                                  
 
      </script>
 </body>
