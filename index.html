@@ -534,12 +534,12 @@
 
                          for(var i = 0; i < filt_data.length; i++){
                             let str_data = filt_data[i].locName + "\n"  + data[i].notes
-                            let col_rad = calc_clr(data, current_chem, data[i][current_chem])
-
+                            let col_rad = calc_clr(data, current_chem, filt_data[i][current_chem])
+                            let rad = filt_data[i][current_chem]
                             markers.push(L.circle([filt_data[i].y, filt_data[i].x], 
-                                        {radius:coor_map.r, color:col_rad[0]}))
+                                        {radius:rad, color:col_rad[0]}))
 
-                            markers.push(L.marker([filt_data[i].y, filt_data[i].x]).bindPopup(str_data))
+                            markers.push(L.marker([filt_data[i].y, filt_data[i].x]).bindPopup(str_data + i))
                          }
                     }
                     map.setView([lat, long], zoom)
