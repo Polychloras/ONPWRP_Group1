@@ -34,12 +34,10 @@
     <div id="mid">
         <div id="legend"></div>
         <div id="map"></div>
-
-        <div id=graph class="graph">
-            <div class="chart-container">
-                <svg class="chart"></svg>
-            </div>
         </div>
+        <div id=graph class="graph">
+            <div id="chart"></div>
+    </div>
     </div>
 
     <script type="module">
@@ -240,19 +238,19 @@
         // returns: Adds a interactive graph to the website given in put data
         //=============================================================================================================================s
        
-            var margin1 = { top: 20, right: 20, bottom: 70, left: 50 },
-                width = 400 - margin1.left - margin1.right,
-                height = 210 - margin1.top - margin1.bottom;
+            var margin1 = { top: margin, right: margin, bottom: margin, left: margin }
+            var width = wind.width - margin1.left - margin1.right
+            var height = wind.height - margin1.top - margin1.bottom;
 
            
-            var x = d3.scaleTime().range([0, width]);
-            var y = d3.scaleLinear().range([height, 0]);
+            var x = d3.scaleTime().range([margin, width + margin*4]);
+            var y = d3.scaleLinear().range([height-margin, margin]);
             var tooltip = d3.select(".tooltip");
 
             
             var line = d3.line()
-                .x(function (d) { return x(d3.timeParse("%Y%m%d")(d.date)); })
-                .y(function (d) { return y(+d.TP); });
+                .x(function (d) { return x(d3.timeParse("%Y%m%d")(d.date)) + margin*2; })
+                .y(function (d) { return y(+d[current_chem]); });
         
 
 
@@ -262,22 +260,25 @@
         //=============================================================================================================================
         function update(selectedLocation, selected, chem) {
             // console.log(final_data,selected);
-            var svg = d3.select(".chart");
-            svg.selectAll("*").remove();
-            var svg = d3.select(".chart")
-                .attr("width", width + margin1.left + margin1.right)
-                .attr("height", height + margin1.top + margin1.bottom)
-                .append("g")
-                .attr("transform",
-                    "translate(" + margin1.left + "," + margin1.top + ")");
-                    var xAxis = svg.append("g")
-                .attr("transform", "translate(0," + height + ")");
-            var yAxis = svg.append("g");
+
+
+            let svg_div = d3.select("#chart")
+            svg_div.selectAll("svg").remove()
+            let svg = svg_div.append('svg')                       
+                             .attr("width", wind.width + margin*4)
+                             .attr("height", height + margin)
+
+            
+            var xAxis = svg.append("g")
+                            .attr("transform", `translate(${margin*2}, ${height - margin})`);
+
+            var yAxis = svg.append("g")
+                            .attr("transform", `translate(${margin*3}, 0)`);
 
             selectedLocation = selectedLocation.split("\n")[0]
-            console.log(final_data,selected,selectedLocation,chem)
             var dataSelected = final_data[selected][selectedLocation];
-            console.log(dataSelected)
+            dataSelected = d3.filter(dataSelected, d => d[chem_selected])
+
             x.domain(d3.extent(dataSelected, function (d) { return d3.timeParse("%Y%m%d")(d.date); }));
             y.domain([0, d3.max(dataSelected, function (d) { return +d[chem]; })]);
 
@@ -289,20 +290,23 @@
                 .attr("transform", "rotate(-40)");
 
             yAxis.call(d3.axisLeft(y));
+
+
             xAxis.call(d3.axisBottom(x).tickFormat(d3.timeFormat("%b %Y")))
                 .selectAll("text")
                 .style("text-anchor", "end")
                 .attr("dx", "-.8em")
                 .attr("dy", ".15em")
                 .attr("transform", "rotate(-40)");
+
             svg.append("text")
-                .attr("transform", "translate(" + (width / 2) + " ," + (height + margin1.top + 30) + ")")
+                .attr("transform", "translate(" + (width/2) + " ," + (height + margin1.top + 30) + ")")
                 .style("text-anchor", "middle")
                 .text("Date");
-            yAxis.call(d3.axisLeft(y));
+
             svg.append("text")
                 .attr("transform", "rotate(-90)")
-                .attr("y", 0 - margin1.left)
+                .attr("y", margin)
                 .attr("x", 0 - (height / 2))
                 .attr("dy", "1em")
                 .style("text-anchor", "middle")
@@ -324,9 +328,11 @@
                 .data(dataSelected)
                 .join("circle")
                 .attr("r", 5)
-                .attr("cx", function (d) { return x(d3.timeParse("%Y%m%d")(d.date)); })
-                .attr("cy", function (d) { return y(+d.TP); })
+                .attr("cx", function (d) { return x(d3.timeParse("%Y%m%d")(d.date)) + margin*2; })
+                .attr("cy", function (d) { return y(+d[chem]); })
                 .attr("fill", "steelblue")
+                
+
                 .on("mouseover", function (event, d) {
                     tooltip.transition()
                         .duration(200)
@@ -340,10 +346,13 @@
                         .duration(500)
                         .style("opacity", 0);
                 });
+                
+
+                chart.append(svg.node())
         }
 
 
-
+       
         //Add Graph ----------------------------------------------------------------------------------------------------------------
         clean_data();
         
@@ -387,7 +396,9 @@
 
 
             for (var i = 0; i < loc_groups.length; i++) {
-                let str_data = loc_groups[i][0]
+                let str_data = "<strong>" + loc_groups[i][0] + "</strong> <br>" 
+                                    + " <strong> Number of Samples: </strong>" +  loc_groups[i][1].length+ "<br>"
+                                    
                 let x = d3.median(loc_groups[i][1], d => d.x)
                 let y = d3.median(loc_groups[i][1], d => d.y)
 
@@ -398,9 +409,9 @@
                 let mark_color = color_rad[0]
                 let rad = ((color_rad[1] / max_val) + 0.5) * coor_map.r
 
+                str_data += ` <strong> ${current_chem} average : </strong>` + color_rad[1]
                 lat_long.push(L.circleMarker([y, x], { radius: rad, color: mark_color }))
                 lat_long.push(L.marker([y, x], {color:mark_color}).bindPopup(str_data).on('click', onClick))
-
             }
             return lat_long
         }
@@ -492,6 +503,49 @@
                 mark_group = L.layerGroup(markers)
                 mark_group.addTo(map);
 
+                //update bins
+                map.removeLayer(mark_group)
+
+                data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
+                markers = get_markloc(data, current_chem)
+                lgd_dsc.remove()
+                bins.remove()
+                text.remove()
+
+                bin_values = []
+                for (var j = 0; j < seq_col.length; j++) {
+                    // color based on quantile that data chemical falls under
+                    let quant = d3.quantile(data, j / (seq_col.length - 1), d => d[current_chem])
+                    bin_values.push(quant)
+                }
+
+                lgd_dsc = bin_svg.append('text')
+                    .attr('x', wind.margin / 2)
+                    .attr('y', wind.margin * 2)
+                    .text(`${current_chem} mean <= `)
+                    .attr("font-weight", "bold")
+
+                bins = bin_svg.selectAll('g')
+                    .data(bin_values)
+                    .join('circle')
+                    .attr('cx', wind.margin)
+                    .attr('cy', (d, i) => wind.margin * (i + 3))
+                    .attr('r', 10)
+                    .attr('fill', (d, i) => d3.color(seq_col[i]))
+                    .attr('stroke', (d, i) => d3.color(seq_col[seq_col.length - 1]))
+
+                text = bin_svg.selectAll('g')
+                    .data(bin_values)
+                    .join('text')
+                    .attr('x', wind.margin * 1.5)
+                    .attr('y', (d, i) => wind.margin * (i + 3.13))
+                    .attr('fill', (d, i) => d3.color(seq_col[seq_col.length]))
+                    .text(d => { console.log(d); return `${d.toFixed(3)}` })
+
+                map.setView([lat, long], zoom)
+                mark_group = L.layerGroup(markers)
+                mark_group.addTo(map);
+
 
 
             })
@@ -544,9 +598,6 @@
                 map.setView([lat, long], zoom)
                 mark_group = L.layerGroup(markers)
                 mark_group.addTo(map);
-
-
-
             })
 
         // add markers for location filter
@@ -567,16 +618,24 @@
                 else {
                     filt_data = d3.filter(data, d => d.locName == loc_selected)
                     filt_data = d3.filter(filt_data, (d) => d.x != '#N/A' && d.y != '#N/A')
+                    let filt_max = d3.max(filt_data, (d) => d[current_chem])
                     long = d3.median(filt_data, (d) => d.x)
                     lat = d3.median(filt_data, (d) => d.y)
                     zoom = coor_map.zoomin
 
                     for (var i = 0; i < filt_data.length; i++) {
-                        let str_data = filt_data[i].locName + "\n" + data[i].notes
+                        let str_data = "<strong>" + filt_data[i].locName + "</strong> <br>" 
+                                    + " <strong> Visit Date: </strong>" +  d3.timeParse("%Y%m%d")(filt_data[i].visitDate) + "<br>"
+                                    + " <strong> Notes: </strong>" + filt_data[i].notes + "<br>"
+                                    +` <strong> ${current_chem} : </strong>` + filt_data[i][current_chem]
+                        
                         let col_rad = calc_clr(data, current_chem, filt_data[i][current_chem])
-
+                        let rad = ((col_rad[1] / filt_max) + 0.5) * coor_map.r
+                        if(!rad){
+                            rad = 0
+                        }
                         markers.push(L.circle([filt_data[i].y, filt_data[i].x],
-                            { radius: coor_map.r, color: col_rad[0] }))
+                            { radius: rad, color: col_rad[0] }))
 
                         markers.push(L.marker([filt_data[i].y, filt_data[i].x]).bindPopup(str_data).on('click', onClick))
                     }
@@ -604,11 +663,13 @@
             // Recover the option that has been chosen
             //var selectedOption = d3.select(this).property("value")
             // Run the updateChart function with this selected option
-            update(e.target.getPopup().getContent(),map_selected,chem_selected)
-            // console.log();
+            let popup = e.target.getPopup().getContent()
+            popup = popup.split('</strong>')[0]
+            popup = popup.split('<strong>')[1]
+            update(popup,map_selected,chem_selected)
         }
 
-
+        
     </script>
 </body>
 

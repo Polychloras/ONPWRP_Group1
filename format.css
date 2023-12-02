@@ -76,6 +76,11 @@ img[class = 'map']{
 div[class = 'graph']{
     float:initial;
 }
+div[class = 'chart']{
+    float:initial;
+    padding: 10px;
+}
+
 
 div[class = 'bins']{
     float:left;
@@ -91,7 +96,7 @@ div[class = 'copyright']{
       bottom: 0%;
       left: 0%;
       right:0%;
-      width: 50vw;
+      width: 40vw;
       height:80vh;
       float:left;
      }
