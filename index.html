@@ -256,7 +256,7 @@
 
             
             var line = d3.line()
-                .x(function (d) { return x(d3.timeParse("%Y%m%d")(d.date)) + margin*2; })
+                .x(function (d) { return x(d3.timeParse("%Y%m%d")(d.date)) + margin*1.75; })
                 .y(function (d) { return y(+d[current_chem]); });
         
 
@@ -277,7 +277,7 @@
 
             
             var xAxis = svg.append("g")
-                            .attr("transform", `translate(${margin*2}, ${height - margin})`);
+                            .attr("transform", `translate(${margin*1.75}, ${height - margin})`);
 
             var yAxis = svg.append("g")
                             .attr("transform", `translate(${margin*3}, 0)`);
@@ -335,7 +335,7 @@
                 .data(dataSelected)
                 .join("circle")
                 .attr("r", 5)
-                .attr("cx", function (d) { return x(d3.timeParse("%Y%m%d")(d.date)) + margin*2; })
+                .attr("cx", function (d) { return x(d3.timeParse("%Y%m%d")(d.date)) + margin*1.75; })
                 .attr("cy", function (d) { return y(+d[chem]); })
                 .attr("fill", "steelblue")
                 
