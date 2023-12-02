@@ -1,212 +1,237 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <link rel = stylesheet href="format.css">
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>    
-        <script src="d3.v7.js"></script>
-        <title>Start Page</title>
-        <script>
-            // soil mdl columns and replacment values
-            const soil_mdls = [50, 10, 0.32, 0.11, 3.3, 0.95, 0.91, 0.97, 0.2, 0.4, 1.0]
-            const soil_cols = ['TN', 'TP', 'm3.P', 'm3.Fe', 'm3.Al', 'm3.Ca', 'm3.Mg', 'm3.K', 'wEX.P', 'wEX.NH3', 'wEX.NOx']
-            
-            // water mdl columns and replacment values
-            const wtr_mdls = [ 0.075, 0.015, 0.05,0.02, 0.01 ]
-            const wtr_cols = ['TN', 'TP', 'disNO3','disNH4' , 'disPO4' ]
 
-            // map coordinates and standard zoom
-            const coor_map = {lat:41.024108551696095, long: -83.68860776599949, zoom:15, zoomin:19, r:10}
-            const margin = 30
-            const wind = {width : window.innerWidth/3 + margin, height : window.innerHeight * 0.8 + margin , margin : margin}
+<head>
+    <link rel=stylesheet href="format.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="d3.v7.js"></script>
+    <title>Start Page</title>
+    <script>
+        // soil mdl columns and replacment values
+        const soil_mdls = [50, 10, 0.32, 0.11, 3.3, 0.95, 0.91, 0.97, 0.2, 0.4, 1.0]
+        const soil_cols = ['TN', 'TP', 'm3.P', 'm3.Fe', 'm3.Al', 'm3.Ca', 'm3.Mg', 'm3.K', 'wEX.P', 'wEX.NH3', 'wEX.NOx']
 
-            const seq_col = ["#f7f7f7", "#cccccc", "#969696", "#636363", "#252525"]
+        // water mdl columns and replacment values
+        const wtr_mdls = [0.075, 0.015, 0.05, 0.02, 0.01]
+        const wtr_cols = ['TN', 'TP', 'disNO3', 'disNH4', 'disPO4']
 
-        </script>
-    </head>
+        // map coordinates and standard zoom
+        const coor_map = { lat: 41.024108551696095, long: -83.68860776599949, zoom: 15, zoomin: 19, r: 10 }
+        const margin = 30
+        const wind = { width: window.innerWidth / 3 + margin, height: window.innerHeight * 0.8 + margin, margin: margin }
+
+        const seq_col = ["#f7f7f7", "#cccccc", "#969696", "#636363", "#252525"]
+        let final_data = {}
+    </script>
+</head>
 
 <body>
-    <div id = "title"></div>
-    <div id = "top"></div>
-    <div id = "mid">
-        <div id = "legend"></div>
-        <div id = "map"></div>
-        <div id = graph class = "graph"></div>
+    <div id="title"></div>
+    <div id="top"></div>
+    <div id="mid">
+        <div id="legend"></div>
+        <div id="map"></div>
+
+        <div id=graph class="graph">
+            <div class="chart-container">
+                <svg class="chart"></svg>
+            </div>
+        </div>
     </div>
-  
-    <script type = "module">
-        let water = await d3.csv("Midden_Oakwoods_Data_Water.csv"); 
-        let soil = await d3.csv("Midden_Oakwoods_Data_Soil.csv"); 
+
+    <script type="module">
+        let water = await d3.csv("Midden_Oakwoods_Data_Water.csv");
+        let soil = await d3.csv("Midden_Oakwoods_Data_Soil.csv");
         let images = ["ColdWater", "ParkDistrict", "Provider"];
 
-        let cvs_files = {"water": {"data": water, "mdl_cols":wtr_cols, "mdl_vals": wtr_mdls},
-                        "soil":{"data": soil, "mdl_cols":soil_cols, "mdl_vals": soil_mdls}}
+        let cvs_files = {
+            "water": { "data": water, "mdl_cols": wtr_cols, "mdl_vals": wtr_mdls },
+            "soil": { "data": soil, "mdl_cols": soil_cols, "mdl_vals": soil_mdls }
+        }
 
         let cvs_names = ['water', 'soil']
         let defualt = "water"
-        let selected = defualt
-        let data = cvs_files[selected].data
+        let map_selected = defualt
+        let loc_selected = ""
+        let chem_selected = "TN"
+        let data = cvs_files[map_selected].data
         let current_chem = 'TN'
 
         //Header --------------------------------------------------------------------------------------------------------------------
         let imgs = d3.select('#title')
-                      .append('header')
-                      .text("Oakwoods Nature Preserve Water Restoration Project")
+            .append('header')
+            .text("Oakwoods Nature Preserve Water Restoration Project")
 
         // Add Footer Images --------------------------------------------------------------------------------------------------------
         imgs.select('#foot')
-              .append('footer')
-              .append('nav')
-              .data(images)
-              .join('img')
-              .attr('class', 'imgs')
-              .attr('src', (d) => "Images/" + d + ".png")
-              .attr('alt', (d) => d)
+            .append('footer')
+            .append('nav')
+            .data(images)
+            .join('img')
+            .attr('class', 'imgs')
+            .attr('src', (d) => "Images/" + d + ".png")
+            .attr('alt', (d) => d)
 
         // Add navigation buttons ----------------------------------------------------------------------------------------------------
         let navbar = d3.select("#top");
         navbar.append('nav')
-              .attr('class', 'navbar')
-              .append('ul')
-                .attr('class', 'navbar')
-        
+            .attr('class', 'navbar')
+            .append('ul')
+            .attr('class', 'navbar')
+
         let nav_btns = navbar.selectAll('ul')
-                             .append('li')
-                                .attr('class', 'navbar')                  
-        
+            .append('li')
+            .attr('class', 'navbar')
+
         let nav_label = nav_btns.append("label")
-                .attr("for", "map_select")
-                .attr("font-size", 16)
-                .text("Sample Media ")
-        
+            .attr("for", "map_select")
+            .attr("font-size", 16)
+            .text("Sample Media ")
+
         let map_drop = nav_btns.append("select")
-                .attr("id", `map_select`)
-                .attr("name", 'map_select')
-        
-      
-         // add options to map seletion dropdown --------------------------------------------------------------------------------------
-         var nav_drp = map_drop.selectAll()
-                            .data(cvs_names)
-                            .join(
-                                enter => enter.append('option')
-                            .text(d => d)
-                            .attr("value", (d) => d)
-                        )
-        
+            .attr("id", `map_select`)
+            .attr("name", 'map_select')
+
+
+        // add options to map seletion dropdown --------------------------------------------------------------------------------------
+        var nav_drp = map_drop.selectAll()
+            .data(cvs_names)
+            .join(
+                enter => enter.append('option')
+                    .text(d => d)
+                    .attr("value", (d) => d)
+            )
+
 
         let loc_label = nav_btns.append("label")
-                .attr("for", "loc_select")
-                .attr("font-size", 16)
-                .text("Sample Location: ")
-        
+            .attr("for", "loc_select")
+            .attr("font-size", 16)
+            .text("Sample Location: ")
+
         let loc_drop = nav_btns.append("select")
-                .attr("id", `loc_select`)
-                .attr("name", 'loc_select')
+            .attr("id", `loc_select`)
+            .attr("name", 'loc_select')
 
         let loc_names = d3.groups(data, (d) => d.locName)
 
         // add location options to dropdown ------------------------------------------------------------------------------------
         loc_drop.append('option').text('All Locations').attr("value", true)
         var nav_drp = loc_drop.selectAll()
-                            .data(loc_names)
-                            .join(
-                                enter => enter.append('option')
-                            .text(d => d[0] )
-                            .attr("value", (d) => d[0])
-                        )
- // ---------------------------------------------------------------------------------------------------------------------------------
+            .data(loc_names)
+            .join(
+                enter => enter.append('option')
+                    .text(d => d[0])
+                    .attr("value", (d) => d[0])
+            )
+        // ---------------------------------------------------------------------------------------------------------------------------------
         let chem_label = nav_btns.append("label")
-                .attr("for", "chem_select")
-                .attr("font-size", 16)
-                .text("Chemical: ")
-        
-        let chem_drop = nav_btns.append("select")
-                .attr("id", `chem_select`)
-                .attr("name", 'chem_select')
+            .attr("for", "chem_select")
+            .attr("font-size", 16)
+            .text("Chemical: ")
 
-        let chem_names = cvs_files[selected].mdl_cols
+        let chem_drop = nav_btns.append("select")
+            .attr("id", `chem_select`)
+            .attr("name", 'chem_select')
+
+        let chem_names = cvs_files[map_selected].mdl_cols
 
         // add location options to dropdown ------------------------------------------------------------------------------------
         var chem_drp = chem_drop.selectAll()
-                            .data(chem_names)
-                            .join(
-                                enter => enter.append('option')
-                            .text((d, i) => chem_names[i] )
-                            .attr("value",(d, i) => chem_names[i] )    
-                            )   
+            .data(chem_names)
+            .join(
+                enter => enter.append('option')
+                    .text((d, i) => chem_names[i])
+                    .attr("value", (d, i) => chem_names[i])
+            )
         // Add Copy Right -----------------------------------------------------------------------------------------------------------
         let attribution = navbar.selectAll('ul')
-                            .append('li')
-                                .attr('class', 'copyright')
-                            .append('a')
-                                .attr('href', "http://www.openstreetmap.org/copyright")
-                                .text("openstreetmap copyright")
-
-        // Add Simple graphs -------------------------------------------------------------------------------------------------------
-        const graphic = d3.select('#graph')
-        const graph_sec = graphic.append('div')
-                  .attr('class', 'graph')
-        
-        var svg = graph_sec
-                        .append('svg')
-                        .attr('width', wind.width + wind.margin)
-                        .attr('height', wind.height + wind.margin)
+            .append('li')
+            .attr('class', 'copyright')
+            .append('a')
+            .attr('href', "http://www.openstreetmap.org/copyright")
+            .text("openstreetmap copyright")
 
 
-        
         // find date
         // inputs: data
         // returns: converts visit date into date objects
         //============================================================================================================================
-        function format_date(data){
-            for(var i = 0; i < data.length; i++){
-                let date = data[i].visitDate.substring(0,4) + "-" 
-                         + data[i].visitDate.substring(4, 6) + "-" 
-                         + data[i].visitDate.substring(6,8)
-                    data[i].visitDate =  new Date(date)
+        function format_date(data) {
+            for (var i = 0; i < data.length; i++) {
+                let date = data[i].visitDate.substring(0, 4) + "-"
+                    + data[i].visitDate.substring(4, 6) + "-"
+                    + data[i].visitDate.substring(6, 8)
+                data[i].visitDate = new Date(date)
             }
         }
 
-         // convert_col
+        // convert_col
         // inputs: data, column
         // returns: nothing converts all numbers in a column from string to number format
         //=============================================================================================================================
-        function convert_col(data, column){
+        function convert_col(data, column) {
             let numbers = []
-            for(var i = 0; i < data.length; i++){
+            for (var i = 0; i < data.length; i++) {
                 let element = data[i][column];
                 data[i][column] = Number(element)
             }
         }
 
-        
+
         // remove_MDLs
         // inputs: data, mdls, column
         // returns: nothing converts strings '<MDL' into mdl values
         //=============================================================================================================================
-       function remove_MDLs(data, mdls, columns){
-            for(var i = 0; i < data.length; i++){
-                for(var j = 0; j < mdls.length; j++){
-                    if(data[i][columns[j]] != null){
-                            if(data[i][columns[j]] == "<MDL"){
-                                data[i][columns[j]] = mdls[j]
+        function remove_MDLs(data, mdls, columns) {
+            for (var i = 0; i < data.length; i++) {
+                for (var j = 0; j < mdls.length; j++) {
+                    if (data[i][columns[j]] != null) {
+                        if (data[i][columns[j]] == "<MDL") {
+                            data[i][columns[j]] = mdls[j]
                         }
-                    data[i][columns[j]] = Number(data[i][columns[j]])
+                        data[i][columns[j]] = Number(data[i][columns[j]])
                     }
-                    
+
                 }
             }
         }
+        //prapre data for graph 
+        //==============================================================================================================================
+        function prepare_data(data, file_data) {
+            let chem_data = {}
+            for (var i = 0; i < data.length; i++) {
+                if (chem_data[data[i].locName]) {
+                if(file_data == 'water'){
+                    chem_data[data[i].locName].push({ "date": data[i].visitDate, "TP": data[i].TP, "TN":data[i].TN, "disNO3":data[i].disNO3 , "disNH4":data[i].disNH4, "disPO4":data[i].disPO4 });
+                }
+                else{
+                    chem_data[data[i].locName].push({"date": data[i].visitDate,"TN":data[i].TN, "TP" : data[i].TP,  "m3.P" : data[i]["m3.P"],  "m3.Fe" : data[i]["m3.Fe"],  "m3.Al" : data[i]["m3.Al"],  "m3.Ca" : data[i]["m3.Ca"],  "m3.Mg" : data[i]["m3.Mg"],  "m3.K" : data[i]["m3.K"],  "wEX.P" : data[i]["wEX.P"],  "wEX.NH3" : data[i]["wEX.NH3"],  "wEX.NOx" : data[i]["wEX.NOx"]});
+
+                }
+                } 
+                else {
+                    chem_data[data[i].locName] = [];
+                }
+            }
+            final_data[file_data] = chem_data;
+            
+        }
+
+
 
         // clean_data
         // inputs: data, column
         // returns: cleans data files and puts everything in proper format
         //=============================================================================================================================
-       function clean_data(){
-            for(var i = 0; i < cvs_names.length; i++){
+        function clean_data() {
+            for (var i = 0; i < cvs_names.length; i++) {
                 let file_data = cvs_names[i]
-                format_date(cvs_files[file_data].data)
+                //format_date(cvs_files[file_data].data)
                 remove_MDLs(cvs_files[file_data].data, cvs_files[file_data].mdl_vals, cvs_files[file_data].mdl_cols)
+                prepare_data(cvs_files[file_data].data, file_data)
             }
         }
 
@@ -214,341 +239,355 @@
         // inputs: data
         // returns: Adds a interactive graph to the website given in put data
         //=============================================================================================================================s
-            convert_col(data, current_chem)
-            
-            // get latest and recent dates
-            let min_date = d3.min(data, (d)=> d.visitDate)
-            let max_date = d3.max(data, (d)=> d.visitDate)
+       
+            var margin1 = { top: 20, right: 20, bottom: 70, left: 50 },
+                width = 400 - margin1.left - margin1.right,
+                height = 210 - margin1.top - margin1.bottom;
 
-            // get smallest and largest cham value
-            let min_chem = d3.min(data, d => d[current_chem])
-            let max_chem = d3.max(data, d => d[current_chem])
-            
+           
+            var x = d3.scaleTime().range([0, width]);
+            var y = d3.scaleLinear().range([height, 0]);
+            var tooltip = d3.select(".tooltip");
 
-            // remove empty cham values
-            data = d3.filter(data, (d) => d[current_chem])
-
-            // create x and y axis elements
-            let x = d3.scaleTime()
-                        .domain([min_date, max_date])
-                        .range([wind.margin, wind.width - wind.margin])
             
-            let y = d3.scaleLinear()
-                    .domain([min_chem, max_chem])
-                    .range([wind.height - wind.margin, wind.margin])
-            
-            // add x and y axis to website div
-            let gx = svg.append("g")
-                .attr("transform", `translate(${wind.margin}, ${wind.height - wind.margin})`)
-                .call(d3.axisBottom(x))
-
-            let gy = svg.append("g")
-                .attr("transform", `translate(${wind.margin}, 0)`)
-                .call(d3.axisLeft(y))
-            
-            // create and add dots to graph
-            
-            let dots = svg.append('g')
-                .selectAll('circle')
-                .data(data)
-                .join('circle')
-                    .attr('cy', (d) =>  {return y(d[current_chem])})
-                    .attr('cx', (d) => { return wind.margin + x(d['visitDate'])})
-                    .attr('r', 2)
-                    .attr('fill', 'teal')
+            var line = d3.line()
+                .x(function (d) { return x(d3.timeParse("%Y%m%d")(d.date)); })
+                .y(function (d) { return y(+d.TP); });
+        
 
 
         // update_data
         // inputs: data
         // returns: updates graph given interactive
         //=============================================================================================================================
-            function update_graph(data){
-                // update recent and latest dates
-                min_date = d3.min(data, (d)=> d.visitDate)
-                max_date = d3.max(data, (d)=> d.visitDate)
-                   
-                // update smallest and largest value
-                let min = d3.min(data, d => d[current_chem])
-                let max = d3.max(data, d => d[current_chem])
-                 
-                data = d3.filter(data, (d) => d[current_chem] != '')
+        function update(selectedLocation, selected, chem) {
+            // console.log(final_data,selected);
+            var svg = d3.select(".chart");
+            svg.selectAll("*").remove();
+            var svg = d3.select(".chart")
+                .attr("width", width + margin1.left + margin1.right)
+                .attr("height", height + margin1.top + margin1.bottom)
+                .append("g")
+                .attr("transform",
+                    "translate(" + margin1.left + "," + margin1.top + ")");
+                    var xAxis = svg.append("g")
+                .attr("transform", "translate(0," + height + ")");
+            var yAxis = svg.append("g");
 
+            selectedLocation = selectedLocation.split("\n")[0]
+            console.log(final_data,selected,selectedLocation,chem)
+            var dataSelected = final_data[selected][selectedLocation];
+            console.log(dataSelected)
+            x.domain(d3.extent(dataSelected, function (d) { return d3.timeParse("%Y%m%d")(d.date); }));
+            y.domain([0, d3.max(dataSelected, function (d) { return +d[chem]; })]);
 
-                // rebuild x axis
-                x = d3.scaleTime()
-                        .domain([min_date, max_date])
-                        .range([wind.margin, wind.width - wind.margin])
+            xAxis.call(d3.axisBottom(x).tickFormat(d3.timeFormat("%b %Y")))
+                .selectAll("text")
+                .style("text-anchor", "end")
+                .attr("dx", "-.8em")
+                .attr("dy", ".15em")
+                .attr("transform", "rotate(-40)");
 
-                // convert original axis to new x axis
-                gx.transition()
+            yAxis.call(d3.axisLeft(y));
+            xAxis.call(d3.axisBottom(x).tickFormat(d3.timeFormat("%b %Y")))
+                .selectAll("text")
+                .style("text-anchor", "end")
+                .attr("dx", "-.8em")
+                .attr("dy", ".15em")
+                .attr("transform", "rotate(-40)");
+            svg.append("text")
+                .attr("transform", "translate(" + (width / 2) + " ," + (height + margin1.top + 30) + ")")
+                .style("text-anchor", "middle")
+                .text("Date");
+            yAxis.call(d3.axisLeft(y));
+            svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin1.left)
+                .attr("x", 0 - (height / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text(chem);
+
+            var path = svg.selectAll(".line")
+                .data([dataSelected])
+                .join("path")
+                .attr("class", "line")
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 3)
+                .attr("fill", "none");
+
+            path.transition()
+                .duration(750)
+                .attr("d", line);
+
+            svg.selectAll("circle")
+                .data(dataSelected)
+                .join("circle")
+                .attr("r", 5)
+                .attr("cx", function (d) { return x(d3.timeParse("%Y%m%d")(d.date)); })
+                .attr("cy", function (d) { return y(+d.TP); })
+                .attr("fill", "steelblue")
+                .on("mouseover", function (event, d) {
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    tooltip.html("Date: " + d.date + "<br/>TP: " + d[chem])
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", function (d) {
+                    tooltip.transition()
                         .duration(500)
-                        .attr("transform", `translate(${wind.margin}, ${wind.height - wind.margin})`)
-                        .call(d3.axisBottom(x))
-
-                // rebuild y axis
-                y = d3.scaleLinear()
-                    .domain([min, max])
-                    .range([wind.height - wind.margin, wind.margin])
-
-                // convert original y axis to new y axis
-                gy.transition()
-                        .duration(500)
-                        .attr("transform", `translate(${wind.margin}, 0)`)
-                        .call(d3.axisLeft(y))
+                        .style("opacity", 0);
+                });
+        }
 
 
-                dots.selectAll('circle').transition()
-                
 
-            }
-
-
-        
-       //Add Graph ----------------------------------------------------------------------------------------------------------------
+        //Add Graph ----------------------------------------------------------------------------------------------------------------
         clean_data();
-
-//=====================================================================================================================================
- //Add Map ----------------------------------------------------------------------------------------------------------------
-//====================================================================================================================================
+        
+        //=====================================================================================================================================
+        //Add Map ----------------------------------------------------------------------------------------------------------------
+        //====================================================================================================================================
 
         // calc _clr
         // inputs: data, chem, r
         // returns: calculates the color of circle based on chemical average
         //=============================================================================================================================
-        function calc_clr(data, chem = "TP", r){
-            let mark_color =  seq_col[0]
+        function calc_clr(data, chem = "TP", r) {
+            let mark_color = seq_col[0]
             let col_ind = 0
             // seperate based on number of color bins
-            for(var j = 0; j < seq_col.length; j++){
-                    // color based on quantile that data chemical falls under
-                    let quant =  d3.quantile(data, j/(seq_col.length-1), d => d[chem])
-                    
-                    // find quantile that data element falls under
-                    if(r >= quant){
-                        mark_color = seq_col[j]
-                        col_ind = j
-                    }
-                    // once found return color and quantile
-                    else{
+            for (var j = 0; j < seq_col.length; j++) {
+                // color based on quantile that data chemical falls under
+                let quant = d3.quantile(data, j / (seq_col.length - 1), d => d[chem])
 
-                        let quant_rad =  d3.quantile(data, (col_ind)/(seq_col.length-1), d => d[chem])
-                        return [mark_color, quant_rad]
-                    }
+                // find quantile that data element falls under
+                if (r >= quant) {
+                    mark_color = seq_col[j]
+                    col_ind = j
                 }
+                // once found return color and quantile
+                else {
+
+                    let quant_rad = d3.quantile(data, (col_ind) / (seq_col.length - 1), d => d[chem])
+                    return [mark_color, quant_rad]
+                }
+            }
         }
         // get_markloc
         // inputs: data, chem
         // returns: returns an array of markers with location coordinates
         //=============================================================================================================================
-        function get_markloc(data, chem = "TP"){
+        function get_markloc(data, chem = "TP") {
             let lat_long = []
             data = d3.filter(data, d => d[chem])
             let loc_groups = d3.groups(data, d => d.locName)
-            
 
-            for(var i = 0; i < loc_groups.length; i++){
+
+            for (var i = 0; i < loc_groups.length; i++) {
                 let str_data = loc_groups[i][0]
-                let x = d3.median(loc_groups[i][1], d=> d.x)
-                let y = d3.median(loc_groups[i][1], d=> d.y)
+                let x = d3.median(loc_groups[i][1], d => d.x)
+                let y = d3.median(loc_groups[i][1], d => d.y)
 
                 let color = d3.mean(loc_groups[i][1], d => d[chem])
                 let max_val = d3.max(loc_groups[i][1], d => d[chem])
 
                 let color_rad = calc_clr(data, chem, color)
                 let mark_color = color_rad[0]
-                let rad = ((color_rad[1]/max_val) + 0.5) * coor_map.r
+                let rad = ((color_rad[1] / max_val) + 0.5) * coor_map.r
 
-                lat_long.push(L.circleMarker([y, x], {radius:rad, color:mark_color}))
-                lat_long.push(L.marker([y, x], {color:mark_color}).bindPopup(str_data))
-                
-             }
-             return lat_long
+                lat_long.push(L.circleMarker([y, x], { radius: rad, color: mark_color }))
+                lat_long.push(L.marker([y, x], {color:mark_color}).bindPopup(str_data).on('click', onClick))
+
+            }
+            return lat_long
         }
 
-        var map = L.map('map').setView([ coor_map.lat, coor_map.long], coor_map.zoom);
+        var map = L.map('map').setView([coor_map.lat, coor_map.long], coor_map.zoom);
 
         let markers = []
         markers = get_markloc(data, current_chem)
-        
+
 
         let mark_group = L.layerGroup(markers)
         mark_group.addTo(map);
 
 
         let bin_values = []
-        for(var j = 0; j < seq_col.length; j++){
-                    // color based on quantile that data chemical falls under
-                    let quant =  d3.quantile(data, j/(seq_col.length-1), d => d[current_chem])
-                    bin_values.push(quant)
+        for (var j = 0; j < seq_col.length; j++) {
+            // color based on quantile that data chemical falls under
+            let quant = d3.quantile(data, j / (seq_col.length - 1), d => d[current_chem])
+            bin_values.push(quant)
         }
-        
+
         let bin_svg = d3.select('#legend')
-                    .append('div')
-                        .attr('class', 'legend')
-                    .append('svg')
-                    .attr('width', wind.margin * 4.5)
-                    .attr('height', window.innerHeight * 0.8)
-                    .append('g')
+            .append('div')
+            .attr('class', 'legend')
+            .append('svg')
+            .attr('width', wind.margin * 4.5)
+            .attr('height', window.innerHeight * 0.8)
+            .append('g')
 
         let lgd_title = bin_svg
-                        .append('text')
-                            .attr('x', wind.margin/2)
-                            .attr('y', wind.margin)
-                            .text(`Legend`)
-                            .attr("font-weight", "bolder")
-                            .attr("font-size", 25)
+            .append('text')
+            .attr('x', wind.margin / 2)
+            .attr('y', wind.margin)
+            .text(`Legend`)
+            .attr("font-weight", "bolder")
+            .attr("font-size", 25)
 
-        let lgd_dsc =  bin_svg.append('text')
-                            .attr('x', wind.margin/2)
-                            .attr('y', wind.margin * 2)
-                            .text(`${current_chem} mean <= `)
-                            .attr("font-weight", "bold")
+        let lgd_dsc = bin_svg.append('text')
+            .attr('x', wind.margin / 2)
+            .attr('y', wind.margin * 2)
+            .text(`${current_chem} mean <= `)
+            .attr("font-weight", "bold")
 
         let bins = bin_svg.selectAll('g')
-                        .data(bin_values)
-                        .join('circle')
-                        .attr('cx', wind.margin)
-                        .attr('cy', (d, i) => wind.margin * (i+3))
-                        .attr('r', 10)
-                        .attr('fill', (d, i) => d3.color(seq_col[i]))
-                        .attr('stroke', (d, i) => d3.color(seq_col[seq_col.length - 1]))
-                        
-         let text = bin_svg.selectAll('g')
-                        .data(bin_values)
-                        .join('text')
-                        .attr('x',wind.margin*1.5 )
-                        .attr('y', (d, i) => wind.margin * (i+3.13))
-                        .attr('fill', (d, i) => d3.color(seq_col[seq_col.length]))
-                        .text(d => `${d.toFixed(3)}`)
+            .data(bin_values)
+            .join('circle')
+            .attr('cx', wind.margin)
+            .attr('cy', (d, i) => wind.margin * (i + 3))
+            .attr('r', 10)
+            .attr('fill', (d, i) => d3.color(seq_col[i]))
+            .attr('stroke', (d, i) => d3.color(seq_col[seq_col.length - 1]))
+
+        let text = bin_svg.selectAll('g')
+            .data(bin_values)
+            .join('text')
+            .attr('x', wind.margin * 1.5)
+            .attr('y', (d, i) => wind.margin * (i + 3.13))
+            .attr('fill', (d, i) => d3.color(seq_col[seq_col.length]))
+            .text(d => `${d.toFixed(3)}`)
 
         // get selection for map
         d3.select("#map_select")
-                .on('change', function(event, d){
-                    // get option selected
-                    map.removeLayer(mark_group)
-                    let lat = coor_map.lat
-                    let long = coor_map.long
-                    let zoom = coor_map.zoom
-                    selected = d3.select(this).property("value")
+            .on('change', function (event, d) {
+                // get option selected
+                map.removeLayer(mark_group)
+                let lat = coor_map.lat
+                let long = coor_map.long
+                let zoom = coor_map.zoom
+                map_selected = d3.select(this).property("value")
 
-                    data = cvs_files[selected].data 
+                data = cvs_files[map_selected].data
 
-                    //change element in chem drop down
-                    chem_names = cvs_files[selected].mdl_cols
-                    chem_drp.remove()
-                    chem_drp= chem_drop.selectAll()
-                            .data(chem_names)
-                            .join(
-                                enter => enter.append('option')
-                            .text((d, i) => chem_names[i] )
-                            .attr("value",(d, i) => chem_names[i] )    
-                            ) 
-                    current_chem = chem_names[0]
-                    data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
+                //change element in chem drop down
+                chem_names = cvs_files[map_selected].mdl_cols
+                chem_drp.remove()
+                chem_drp = chem_drop.selectAll()
+                    .data(chem_names)
+                    .join(
+                        enter => enter.append('option')
+                            .text((d, i) => chem_names[i])
+                            .attr("value", (d, i) => chem_names[i])
+                    )
+                current_chem = chem_names[0]
+                data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
 
-                    markers = get_markloc(data, current_chem)
-                    
-                    map.setView([lat, long], zoom)
-                    mark_group = L.layerGroup(markers)
-                    mark_group.addTo(map);
+                markers = get_markloc(data, current_chem)
 
-                    update_graph(data)
+                map.setView([lat, long], zoom)
+                mark_group = L.layerGroup(markers)
+                mark_group.addTo(map);
+
+
 
             })
 
-            d3.select('#chem_select')
-                .on('change', function(event, d){
-                    selected = d3.select(this).property("value")
-                    current_chem = selected
-                    map.removeLayer(mark_group)
-                    let lat = coor_map.lat
-                    let long = coor_map.long
-                    let zoom = coor_map.zoom
-                    
-                    data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
-                    markers = get_markloc(data, current_chem)
-                    lgd_dsc.remove()
-                    bins.remove()
-                    text.remove()
+        d3.select('#chem_select')
+            .on('change', function (event, d) {
+                chem_selected = d3.select(this).property("value")
+                current_chem = chem_selected
+                map.removeLayer(mark_group)
+                let lat = coor_map.lat
+                let long = coor_map.long
+                let zoom = coor_map.zoom
 
-                    bin_values = []
-                    for(var j = 0; j < seq_col.length; j++){
-                                // color based on quantile that data chemical falls under
-                                let quant =  d3.quantile(data, j/(seq_col.length-1), d => d[current_chem])
-                                bin_values.push(quant)
-                    }
+                data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
+                markers = get_markloc(data, current_chem)
+                lgd_dsc.remove()
+                bins.remove()
+                text.remove()
 
-                    lgd_dsc =  bin_svg.append('text')
-                                        .attr('x', wind.margin/2)
-                                        .attr('y', wind.margin * 2)
-                                        .text(`${current_chem} mean <= `)
-                                        .attr("font-weight", "bold")
+                bin_values = []
+                for (var j = 0; j < seq_col.length; j++) {
+                    // color based on quantile that data chemical falls under
+                    let quant = d3.quantile(data, j / (seq_col.length - 1), d => d[current_chem])
+                    bin_values.push(quant)
+                }
 
-                    bins = bin_svg.selectAll('g')
-                                    .data(bin_values)
-                                    .join('circle')
-                                    .attr('cx', wind.margin)
-                                    .attr('cy', (d, i) => wind.margin * (i+3))
-                                    .attr('r', 10)
-                                    .attr('fill', (d, i) => d3.color(seq_col[i]))
-                                    .attr('stroke', (d, i) => d3.color(seq_col[seq_col.length - 1]))
-                                    
-                    text = bin_svg.selectAll('g')
-                                    .data(bin_values)
-                                    .join('text')
-                                    .attr('x',wind.margin*1.5 )
-                                    .attr('y', (d, i) => wind.margin * (i+3.13))
-                                    .attr('fill', (d, i) => d3.color(seq_col[seq_col.length]))
-                                    .text(d => {console.log(d);return `${d.toFixed(3)}`})
+                lgd_dsc = bin_svg.append('text')
+                    .attr('x', wind.margin / 2)
+                    .attr('y', wind.margin * 2)
+                    .text(`${current_chem} mean <= `)
+                    .attr("font-weight", "bold")
 
-                    map.setView([lat, long], zoom)
-                    mark_group = L.layerGroup(markers)
-                    mark_group.addTo(map);
+                bins = bin_svg.selectAll('g')
+                    .data(bin_values)
+                    .join('circle')
+                    .attr('cx', wind.margin)
+                    .attr('cy', (d, i) => wind.margin * (i + 3))
+                    .attr('r', 10)
+                    .attr('fill', (d, i) => d3.color(seq_col[i]))
+                    .attr('stroke', (d, i) => d3.color(seq_col[seq_col.length - 1]))
 
-                    update_graph(data)
+                text = bin_svg.selectAll('g')
+                    .data(bin_values)
+                    .join('text')
+                    .attr('x', wind.margin * 1.5)
+                    .attr('y', (d, i) => wind.margin * (i + 3.13))
+                    .attr('fill', (d, i) => d3.color(seq_col[seq_col.length]))
+                    .text(d => { console.log(d); return `${d.toFixed(3)}` })
 
-                })
+                map.setView([lat, long], zoom)
+                mark_group = L.layerGroup(markers)
+                mark_group.addTo(map);
 
-            // add markers for location filter
-            d3.select("#loc_select")
-                .on('change', function(event, d){
-                    // get option selected
-                    map.removeLayer(mark_group)
-                    selected = d3.select(this).property("value")
-                    let filt_data = data
-                    let lat = coor_map.lat
-                    let long = coor_map.long
-                    let zoom = coor_map.zoom
-                    markers = []
-                    if(selected == "true"){
-                         markers = get_markloc(filt_data, current_chem)
 
-                    }
-                    else
-                    {
-                         filt_data = d3.filter(data, d => d.locName == selected)
-                         filt_data = d3.filter(filt_data, (d) => d.x != '#N/A' && d.y != '#N/A')
-                         long = d3.median(filt_data, (d) => d.x)
-                         lat = d3.median(filt_data, (d) => d.y)
-                         zoom = coor_map.zoomin
 
-                         for(var i = 0; i < filt_data.length; i++){
-                            let str_data = filt_data[i].locName + "\n"  + data[i].notes
-                            let col_rad = calc_clr(data, current_chem, data[i][current_chem])
-
-                            markers.push(L.circle([filt_data[i].y, filt_data[i].x], 
-                                        {radius:coor_map.r, color:col_rad[0]}))
-
-                            markers.push(L.marker([filt_data[i].y, filt_data[i].x]).bindPopup(str_data))
-                         }
-                    }
-                    map.setView([lat, long], zoom)
-                    mark_group = L.layerGroup(markers)
-                    mark_group.addTo(map).on('click', onclick);
             })
 
-        
-        function onclick(e){  
+        // add markers for location filter
+        d3.select("#loc_select")
+            .on('change', function (event, d) {
+                // get option selected
+                map.removeLayer(mark_group)
+                loc_selected = d3.select(this).property("value")
+                let filt_data = data
+                let lat = coor_map.lat
+                let long = coor_map.long
+                let zoom = coor_map.zoom
+                markers = []
+                if (loc_selected == "true") {
+                    markers = get_markloc(filt_data, current_chem)
+
+                }
+                else {
+                    filt_data = d3.filter(data, d => d.locName == loc_selected)
+                    filt_data = d3.filter(filt_data, (d) => d.x != '#N/A' && d.y != '#N/A')
+                    long = d3.median(filt_data, (d) => d.x)
+                    lat = d3.median(filt_data, (d) => d.y)
+                    zoom = coor_map.zoomin
+
+                    for (var i = 0; i < filt_data.length; i++) {
+                        let str_data = filt_data[i].locName + "\n" + data[i].notes
+                        let col_rad = calc_clr(data, current_chem, data[i][current_chem])
+
+                        markers.push(L.circle([filt_data[i].y, filt_data[i].x],
+                            { radius: coor_map.r, color: col_rad[0] }))
+
+                        markers.push(L.marker([filt_data[i].y, filt_data[i].x]).bindPopup(str_data).on('click', onClick))
+                    }
+                }
+                map.setView([lat, long], zoom)
+                mark_group = L.layerGroup(markers)
+                mark_group.addTo(map).on('click', onclick);
+            })
+
+
+        function onclick(e) {
             map.setView([e.latlng.lat, e.latlng.lng], coor_map.zoomin)
         }
         map.on('click', onclick);
@@ -560,10 +599,17 @@
             layers: [mark_group]
         }).addTo(map);
 
-        
-        graph.append(svg.node())
-                                  
 
-     </script>
+        function onClick(e) {
+            // Recover the option that has been chosen
+            //var selectedOption = d3.select(this).property("value")
+            // Run the updateChart function with this selected option
+            update(e.target.getPopup().getContent(),map_selected,chem_selected)
+            // console.log();
+        }
+
+
+    </script>
 </body>
+
 </html>
