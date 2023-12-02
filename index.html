@@ -202,16 +202,23 @@
             let chem_data = {}
             for (var i = 0; i < data.length; i++) {
                 if (chem_data[data[i].locName]) {
-                if(file_data == 'water'){
-                    chem_data[data[i].locName].push({ "date": data[i].visitDate, "TP": data[i].TP, "TN":data[i].TN, "disNO3":data[i].disNO3 , "disNH4":data[i].disNH4, "disPO4":data[i].disPO4 });
-                }
-                else{
-                    chem_data[data[i].locName].push({"date": data[i].visitDate,"TN":data[i].TN, "TP" : data[i].TP,  "m3.P" : data[i]["m3.P"],  "m3.Fe" : data[i]["m3.Fe"],  "m3.Al" : data[i]["m3.Al"],  "m3.Ca" : data[i]["m3.Ca"],  "m3.Mg" : data[i]["m3.Mg"],  "m3.K" : data[i]["m3.K"],  "wEX.P" : data[i]["wEX.P"],  "wEX.NH3" : data[i]["wEX.NH3"],  "wEX.NOx" : data[i]["wEX.NOx"]});
+                    if(file_data == 'water'){
+                        chem_data[data[i].locName].push({ "date": data[i].visitDate, "TP": data[i].TP, "TN":data[i].TN, "disNO3":data[i].disNO3 , "disNH4":data[i].disNH4, "disPO4":data[i].disPO4 });
+                    }
+                    else{
+                        chem_data[data[i].locName].push({"date": data[i].visitDate,"TN":data[i].TN, "TP" : data[i].TP,  "m3.P" : data[i]["m3.P"],  "m3.Fe" : data[i]["m3.Fe"],  "m3.Al" : data[i]["m3.Al"],  "m3.Ca" : data[i]["m3.Ca"],  "m3.Mg" : data[i]["m3.Mg"],  "m3.K" : data[i]["m3.K"],  "wEX.P" : data[i]["wEX.P"],  "wEX.NH3" : data[i]["wEX.NH3"],  "wEX.NOx" : data[i]["wEX.NOx"]});
 
-                }
+                    }
                 } 
                 else {
                     chem_data[data[i].locName] = [];
+                    if(file_data == 'water'){
+                        chem_data[data[i].locName].push({ "date": data[i].visitDate, "TP": data[i].TP, "TN":data[i].TN, "disNO3":data[i].disNO3 , "disNH4":data[i].disNH4, "disPO4":data[i].disPO4 });
+                    }
+                    else{
+                        chem_data[data[i].locName].push({"date": data[i].visitDate,"TN":data[i].TN, "TP" : data[i].TP,  "m3.P" : data[i]["m3.P"],  "m3.Fe" : data[i]["m3.Fe"],  "m3.Al" : data[i]["m3.Al"],  "m3.Ca" : data[i]["m3.Ca"],  "m3.Mg" : data[i]["m3.Mg"],  "m3.K" : data[i]["m3.K"],  "wEX.P" : data[i]["wEX.P"],  "wEX.NH3" : data[i]["wEX.NH3"],  "wEX.NOx" : data[i]["wEX.NOx"]});
+
+                    }
                 }
             }
             final_data[file_data] = chem_data;
@@ -270,7 +277,7 @@
 
             
             var xAxis = svg.append("g")
-                            .attr("transform", `translate(${margin*2}, ${height - margin})`);
+                            .attr("transform", `translate(${margin*1}, ${height - margin})`);
 
             var yAxis = svg.append("g")
                             .attr("transform", `translate(${margin*3}, 0)`);
@@ -278,7 +285,7 @@
             selectedLocation = selectedLocation.split("\n")[0]
             var dataSelected = final_data[selected][selectedLocation];
             dataSelected = d3.filter(dataSelected, d => d[chem_selected])
-
+            console.log(dataSelected, dataSelected.length)
             x.domain(d3.extent(dataSelected, function (d) { return d3.timeParse("%Y%m%d")(d.date); }));
             y.domain([0, d3.max(dataSelected, function (d) { return +d[chem]; })]);
 
