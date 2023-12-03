@@ -99,6 +99,7 @@ div[class = 'copyright']{
       width: 40vw;
       height:80vh;
       float:left;
+      position: relative;
      }
 
      .chart-container {
@@ -106,7 +107,7 @@ div[class = 'copyright']{
         top: 0;
         right: 0;
         margin-top: 20%;
-        margin-right: 10%;
+        margin-right: 8%;
     }
     .chart {
         display: block;
@@ -119,6 +120,7 @@ div[class = 'copyright']{
         width: 120px;
         height: 50px;
         padding: 2px;
+        z-index: 9999 !important;
         font: 12px sans-serif;
         background: lightsteelblue;
         border: 0px;

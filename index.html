@@ -38,6 +38,7 @@
         <div id=graph class="graph">
             <div id="chart"></div>
     </div>
+    <div class="tooltip"></div>
     </div>
 
     <script type="module">
@@ -306,8 +307,9 @@
                 .attr("dy", ".15em")
                 .attr("transform", "rotate(-40)");
 
+            
             svg.append("text")
-                .attr("transform", "translate(" + (width) + " ," + (height + margin1.top + 30) + ")")
+                .attr("transform", "translate(" + (width - 60) + " ," + (height/2 + margin1.top - 20 ) + ")")
                 .style("text-anchor", "middle")
                 .text("Date");
 
@@ -338,14 +340,12 @@
                 .attr("cx", function (d) { return x(d3.timeParse("%Y%m%d")(d.date)) + margin*1.75; })
                 .attr("cy", function (d) { return y(+d[chem]); })
                 .attr("fill", "steelblue")
-                
-
                 .on("mouseover", function (event, d) {
                     tooltip.transition()
                         .duration(200)
                         .style("opacity", .9);
-                    tooltip.html("Date: " + d.date + "<br/>TP: " + d[chem])
-                        .style("left", (event.pageX + 5) + "px")
+                    tooltip.html(selectedLocation + "<br/>"+"Date: " + d.date + "<br/>"+chem + d[chem]+ "<br/> " )
+                        .style("left", (event.pageX - 125) + "px")
                         .style("top", (event.pageY - 28) + "px");
                 })
                 .on("mouseout", function (d) {
@@ -362,7 +362,7 @@
        
         //Add Graph ----------------------------------------------------------------------------------------------------------------
         clean_data();
-        
+        update("Wetland Pool 38",map_selected,"TN")
         //=====================================================================================================================================
         //Add Map ----------------------------------------------------------------------------------------------------------------
         //====================================================================================================================================
