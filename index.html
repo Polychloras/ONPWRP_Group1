@@ -838,13 +838,14 @@
             //var selectedOption = d3.select(this).property("value")
             // Run the updateChart function with this selected option
             let popup = e.target.getPopup().getContent()
-            if(popup){
-                map.setView([e.latlng.lat, e.latlng.lng], coor_map.zoomin)
-            }
             popup = popup.split('</strong>')[0]
             popup = popup.split('<strong>')[1]
             if(popup){
-                map.setView([e.latlng.lat, e.latlng.lng], coor_map.zoomin)
+                let zoom = coor_map.zoomin
+                if(zoom <= map.getZoom()){
+                    zoom = map.getZoom()
+                }
+                map.setView([e.latlng.lat, e.latlng.lng], zoom)
             }
             update(popup, map_selected, chem_selected);
             updste_bar(popup, map_selected);
