@@ -489,7 +489,7 @@
                     tooltip.transition()
                         .duration(200)
                         .style("opacity", .9);
-                    tooltip.html(selectedLocation + "<br/>"+"Date: " + d.date + "<br/>"+chem + d[chem]toFixed(3)+ "<br/> ")
+                    tooltip.html(selectedLocation + "<br/>"+"Date: " + d.date + "<br/>"+chem + d[chem].toFixed(3)+ "<br/> ")
                         .style("left", (event.pageX - 125) + "px")
                         .style("top", (event.pageY - 28) + "px");
                 })
