@@ -40,6 +40,7 @@
         <div id="bar-chart">
             <div id="barChartTooltip"></div>
         </div>
+        
     </div>
 
     </div>
@@ -486,7 +487,7 @@
                     tooltip.transition()
                         .duration(200)
                         .style("opacity", .9);
-                    tooltip.html("Date: " + d.date + "<br/>TP: " + d[chem])
+                    tooltip.html("<strong>Date:</strong> " + d.date + "<br/>TP: " + d[chem])
                         .style("left", (event.pageX + 5) + "px")
                         .style("top", (event.pageY - 28) + "px");
                 })
@@ -854,9 +855,10 @@
             bartooltip.transition()
                 .duration(200)
                 .style('opacity', .9);
-            bartooltip.html(`Value: ${d.value}`)
+            bartooltip.html(`<strong>Chemical Mean Value:<Strong> ${d.value.toFixed(5)}`)
                 .style('left', `${x}px`)
                 .style('top', `${y}px`);
+                
         }
 
         function handleMouseOut() {
