@@ -39,6 +39,11 @@
         <div id="chart"></div>
         <div id="bar-chart">
             <div id="barChartTooltip"></div>
+            <div>
+                <label for="date-slider">Select Date</label>
+                <input type="range" id="date-slider" min="0" max="2" step="1" value="0">
+                <span id="selected-date"></span>
+            </div>
         </div>
         
     </div>
@@ -846,6 +851,7 @@
             if(popup){
                 map.setView([e.latlng.lat, e.latlng.lng], coor_map.zoomin)
             }
+            slides();
             update(popup, map_selected, chem_selected);
             updste_bar(popup, map_selected);
         }
@@ -867,6 +873,18 @@
             bartooltip.transition()
                 .duration(500)
                 .style('opacity', 0);
+        }
+
+        const slider = d3.select('#date-slider');
+        const selectedDateText = d3.select('#selected#date');
+
+        function slides(){
+            slider.on('input', function(){
+                const index = +this.value;
+                const selectedDate = sampleData[index].date;
+                selectedDateText.text(`Selected Date: ${selectedDate}`);
+                const filteredData = sampleData.filter(d => d.date === selectedDate);
+            });
         }
 
     </script>
