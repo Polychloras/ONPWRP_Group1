@@ -409,11 +409,13 @@
 
             let graph_text = selectedLocation
             if(selectedLocation == "water" || selectedLocation == "soil"){
-                graph_text = "All " + selectedLocation + " Samples"
+                graph_text = "All " + selectedLocation[0].toUpperCase() + selectedLocation.substring(1,selectedLocation.length) +" "
             }   
+            graph_text += ` ${chem} Values over Time`
+
             var graph_title = svg.append('text')
-                             .attr("x", margin*4)
-                             .attr("y", margin*0.90)
+                             .attr("x", margin*2)
+                             .attr("y", margin*0.70)
                              .attr("class", "Graph Title")
                               .text(graph_text)
 
