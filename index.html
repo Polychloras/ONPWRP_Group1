@@ -251,7 +251,7 @@
 
            
             var x = d3.scaleTime().range([margin, width + margin*4]);
-            var y = d3.scaleLinear().range([height-margin, margin]);
+            var y = d3.scaleLinear().range([(height-margin)*0.45, margin]);
             var tooltip = d3.select(".tooltip");
 
             
@@ -273,14 +273,14 @@
             svg_div.selectAll("svg").remove()
             let svg = svg_div.append('svg')                       
                              .attr("width", wind.width + margin*4)
-                             .attr("height", height + margin)
+                             .attr("height", (height + margin)*0.5)
 
             
             var xAxis = svg.append("g")
-                            .attr("transform", `translate(${margin*1.75}, ${height - margin})`);
+                            .attr("transform", `translate(${margin*1.75}, ${(height - margin)*0.45})`);
 
             var yAxis = svg.append("g")
-                            .attr("transform", `translate(${margin*2.75}, 0)`);
+                            .attr("transform", `translate(${margin*2.75}, ${0})`);
 
             selectedLocation = selectedLocation.split("\n")[0]
             var dataSelected = final_data[selected][selectedLocation];
@@ -307,14 +307,14 @@
                 .attr("transform", "rotate(-40)");
 
             svg.append("text")
-                .attr("transform", "translate(" + (width/2) + " ," + (height + margin1.top + 30) + ")")
+                .attr("transform", "translate(" + (width) + " ," + (height + margin1.top + 30) + ")")
                 .style("text-anchor", "middle")
                 .text("Date");
 
             svg.append("text")
                 .attr("transform", "rotate(-90)")
                 .attr("y", margin)
-                .attr("x", 0 - (height / 2))
+                .attr("x", 0 - (height / 2)*0.45)
                 .attr("dy", "1em")
                 .style("text-anchor", "middle")
                 .text(chem);
