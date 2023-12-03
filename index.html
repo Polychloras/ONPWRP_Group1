@@ -818,7 +818,7 @@
 
 
         function onclick(e) {
-            map.setView([e.latlng.lat, e.latlng.lng], coor_map.zoom)
+            map.setView([coor_map.lat, coor_map.long], coor_map.zoom)
             update(map_selected, map_selected, chem_selected);
         }
         map.on('click', onclick);

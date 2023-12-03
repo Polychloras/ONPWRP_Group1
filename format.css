@@ -6,6 +6,10 @@ header {
     color: white;
   }
 
+text[class='Graph Title']{
+    font-weight: bolder;
+    background-color: #40394A;
+}
 
 div[class = 'legend']{
     float:left;
