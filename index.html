@@ -38,7 +38,6 @@
     <div id=graph class="graph">
         <div id="chart"></div>
         <div id="bar-chart">
-            <div id="barChartTooltip"></div>
         </div>
        
     </div>
@@ -358,8 +357,21 @@
                 .attr('y', d => yScale(d.value))
                 .attr('height', d => (height*0.4 - yScale(d.value)))
                 .attr('fill', d => colorScale(d.chemical))
-                .on('mouseover', handleMouseOver)
-                .on('mouseout', handleMouseOut);
+                .on("mouseover", function (event, d) {
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    tooltip.html(`<strong>Chemical Mean Value:<Strong> ${d.value.toFixed(5)}`)
+                        .style("left", (event.pageX - 125) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", function (d) {
+                    tooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                });
+
+              
 
             // Draw x-axis
             svg.append('g')
@@ -483,8 +495,6 @@
                 .attr("cx", function (d) { return x(d3.timeParse("%Y%m%d")(d.date)) + margin * 1.75; })
                 .attr("cy", function (d) { return y(+d[chem]); })
                 .attr("fill", "steelblue")
-
-
                 .on("mouseover", function (event, d) {
                     tooltip.transition()
                         .duration(200)
@@ -850,24 +860,6 @@
             updste_bar(popup, map_selected);
         }
 
-        const bartooltip = d3.select('#barChartTooltip');
-
-        function handleMouseOver(event, d) {
-            const [x, y] = d3.pointer(event);
-            bartooltip.transition()
-                .duration(200)
-                .style('opacity', .9);
-            bartooltip.html(`<strong>Chemical Mean Value:<Strong> ${d.value.toFixed(5)}`)
-                .style('left', `${x}px`)
-                .style('top', `${y}px`);
-                
-        }
-
-        function handleMouseOut() {
-            bartooltip.transition()
-                .duration(500)
-                .style('opacity', 0);
-        }
 
     </script>
 </body>
