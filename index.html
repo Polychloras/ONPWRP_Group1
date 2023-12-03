@@ -209,7 +209,7 @@
 
             for(var k = 0; k < time_group.length; k++){
                 if(file_data == "water"){
-                    console.log(time_group[k][0])
+
                     chem_data[file_data].push({ "date": time_group[k][0] 
                                                 , "TP": d3.mean(time_group[k][1], d=>d.TP)
                                                 , "TN": d3.mean(time_group[k][1], d=>d.TN)
@@ -314,23 +314,15 @@
                 for (var i = 0; i < soil_cols.length; i++) {
 
                     var chem_mean = d3.mean(dataSelected, d => d[soil_cols[i]]);
-
                     sampleData.push({ chemical: soil_cols[i], value: chem_mean });
 
                 }
-                console.log(sampleData);
-
             }
             if (selected == "water") {
                 for (var i = 0; i < wtr_cols.length; i++) {
-
                     var chem_mean = d3.mean(dataSelected, d => d[wtr_cols[i]]);
-
                     sampleData.push({ chemical: wtr_cols[i], value: chem_mean });
-
                 }
-                console.log(sampleData);
-
             }
             // Create unique colors for each chemical
             const colorScale = d3.scaleOrdinal()
@@ -432,7 +424,7 @@
 
             selectedLocation = selectedLocation.split("\n")[0]
             var dataSelected = final_data[selected][selectedLocation];
-            console.log(dataSelected, selected, selectedLocation);
+            console.log(dataSelected, selected, selectedLocation)
             dataSelected = d3.filter(dataSelected, d => d[chem_selected])
             x.domain(d3.extent(dataSelected, function (d) { return d3.timeParse("%Y%m%d")(d.date); }));
             y.domain([0, d3.max(dataSelected, function (d) { return +d[chem]; })]);
@@ -630,6 +622,8 @@
             .attr('fill', (d, i) => d3.color(seq_col[seq_col.length]))
             .text(d => `${d.toFixed(3)}`)
         update(map_selected, map_selected, chem_selected)
+        updste_bar(map_selected, map_selected);
+
         // get selection for map
         d3.select("#map_select")
             .on('change', function (event, d) {
@@ -653,6 +647,7 @@
                             .attr("value", (d, i) => chem_names[i])
                     )
                 current_chem = chem_names[0]
+                chem_selected = current_chem
                 data = d3.filter(data, (d) => d.x != '#N/A' && d.y != '#N/A')
 
                 markers = get_markloc(data, current_chem)
@@ -704,6 +699,7 @@
                 mark_group = L.layerGroup(markers)
                 mark_group.addTo(map);
                 update(map_selected, map_selected, chem_selected)
+                updste_bar(map_selected, map_selected);
 
 
             })
@@ -756,8 +752,8 @@
                 map.setView([lat, long], zoom)
                 mark_group = L.layerGroup(markers)
                 mark_group.addTo(map);
-                if(loc_selected != true){
-                    console.log(loc_selected, map_selected, current_chem)
+               
+                if(loc_selected == 'true' || loc_selected == ""){
                     update(map_selected, map_selected, current_chem)
                 }
                 else{
@@ -796,7 +792,7 @@
 
                         let col_rad = calc_clr(data, current_chem, filt_data[i][current_chem])
                         let rad = 0
-                        console.log(filt_data, col_rad != null, filt_max)
+            
                         if (col_rad[1]) {
                             rad = ((col_rad[1] / filt_max) + 0.5) * coor_map.r
                         }
@@ -810,6 +806,13 @@
                 map.setView([lat, long], zoom)
                 mark_group = L.layerGroup(markers)
                 mark_group.addTo(map).on('click', onclick);
+                if(loc_selected == 'true'){
+                    update(map_selected, map_selected, current_chem)
+                }
+                else{
+                    update(loc_selected, map_selected, current_chem)
+                }
+                updste_bar(loc_selected, map_selected);
             })
 
 
