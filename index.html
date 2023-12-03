@@ -37,7 +37,9 @@
     </div>
     <div id=graph class="graph">
         <div id="chart"></div>
-        <div id="bar-chart"></div>
+        <div id="bar-chart">
+            <div id="barChartTooltip"></div>
+        </div>
     </div>
     </div>
 
@@ -330,7 +332,9 @@
                 .attr('width', xScale.bandwidth())
                 .attr('y', d => yScale(d.value))
                 .attr('height', d => height - yScale(d.value))
-                .attr('fill', d => colorScale(d.chemical));
+                .attr('fill', d => colorScale(d.chemical))
+                .on('mouseover', handleMouseOver)
+                .on('mouseout', handleMouseOut);
 
             // Draw x-axis
             svg.append('g')
@@ -781,6 +785,24 @@
             popup = popup.split('<strong>')[1]
             update(popup, map_selected, chem_selected);
             updste_bar(popup, map_selected);
+        }
+
+        const bartooltip = d3.select('#barChartTooltip');
+
+        function handleMouseOver(event, d) {
+            const [x, y] = d3.pointer(event);
+            bartooltip.transition()
+                .duration(200)
+                .style('opacity', .9);
+            bartooltip.html(`Value: ${d.value}`)
+                .style('left', `${x}px`)
+                .style('top', `${y}px`);
+        }
+
+        function handleMouseOut() {
+            bartooltip.transition()
+                .duration(500)
+                .style('opacity', 0);
         }
 
     </script>

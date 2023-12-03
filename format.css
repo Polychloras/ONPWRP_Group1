@@ -1,128 +1,144 @@
 header {
-    background-image:linear-gradient(#1C1427, #40394A);
+    background-image: linear-gradient(#1C1427, #40394A);
     padding: 30px;
     text-align: center;
     font-size: 35px;
     color: white;
-  }
-
-
-div[class = 'legend']{
-    float:left;
-    background-color:#7ECA9C;
 }
 
-li[class ='navbar']{
+
+div[class='legend'] {
+    float: left;
+    background-color: #7ECA9C;
+}
+
+li[class='navbar'] {
     float: left;
     list-style-type: none;
     padding: 10px 10px;
 }
 
-li[class ='copyright']{
+li[class='copyright'] {
     float: inline-end;
     list-style-type: none;
     padding: 10px 10px;
 
 }
 
-li[class = 'copyright'] a {
-    display:block;
-    background-color:#7ECA9C;
+li[class='copyright'] a {
+    display: block;
+    background-color: #7ECA9C;
     text-align: center;
     padding: 10px 10px;
     margin: 5px;
     text-decoration: none;
 }
 
-li[class = 'copyright'] a:hover{
-    background-color:#CCFFBD;
+li[class='copyright'] a:hover {
+    background-color: #CCFFBD;
 
 }
 
-li[class = 'navbar'] a {
-    display:block;
-    background-color:#7ECA9C;
+li[class='navbar'] a {
+    display: block;
+    background-color: #7ECA9C;
     text-align: center;
     padding: 10px 10px;
     margin: 5px;
     text-decoration: none;
 }
 
-li[class = 'navbar'] a:hover{
-    background-color:#CCFFBD;
+li[class='navbar'] a:hover {
+    background-color: #CCFFBD;
 
 }
 
-nav[class= 'navbar']{
+nav[class='navbar'] {
     list-style-type: none;
-    margin : 0;
-    padding : 0;
-    overflow:hidden;
-    background-image:linear-gradient(to bottom right, #CCFFBD, #7ECA9C);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-image: linear-gradient(to bottom right, #CCFFBD, #7ECA9C);
 }
 
-img[class = imgs]{
+img[class=imgs] {
     width: 70px;
-    height:70px;
-    float: inline-end;  
-    padding: 10px 10px;  
- 
+    height: 70px;
+    float: inline-end;
+    padding: 10px 10px;
+
 }
 
-img[class = 'map']{
+img[class='map'] {
     height: 500px;
 }
 
-div[class = 'graph']{
-    float:initial;
+div[class='graph'] {
+    float: initial;
 }
-div[class = 'chart']{
-    float:initial;
+
+div[class='chart'] {
+    float: initial;
     padding: 10px;
 }
 
 
-div[class = 'bins']{
-    float:left;
+div[class='bins'] {
+    float: left;
 }
 
-div[class = 'copyright']{
-    float:none;
+div[class='copyright'] {
+    float: none;
 
 }
 
-#map {position: relative;
-      top:0%;
-      bottom: 0%;
-      left: 0%;
-      right:0%;
-      width: 40vw;
-      height:80vh;
-      float:left;
-     }
+#map {
+    position: relative;
+    top: 0%;
+    bottom: 0%;
+    left: 0%;
+    right: 0%;
+    width: 40vw;
+    height: 80vh;
+    float: left;
+}
 
-     .chart-container {
-        position: absolute;
-        top: 0;
-        right: 0;
-        margin-top: 20%;
-        margin-right: 10%;
-    }
-    .chart {
-        display: block;
-        width: 400px;
-        height: 210px;
-    }
-    .tooltip {
-        position: absolute;
-        text-align: center;
-        width: 120px;
-        height: 50px;
-        padding: 2px;
-        font: 12px sans-serif;
-        background: lightsteelblue;
-        border: 0px;
-        border-radius: 8px;
-        pointer-events: none;
-        opacity: 0;
-    }
+.chart-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-top: 20%;
+    margin-right: 10%;
+}
+
+.chart {
+    display: block;
+    width: 400px;
+    height: 210px;
+}
+
+.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 120px;
+    height: 50px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+    opacity: 0;
+}
+
+#barChartTooltip {
+    position: absolute;
+    text-align: center;
+    padding: 5px;
+    font: 12px sans-serif;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    pointer-events: none;
+    opacity: 0;
+  }
