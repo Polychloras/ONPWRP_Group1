@@ -379,7 +379,7 @@
 
             // Add labels
             svg.append('text')
-                .attr('transform', `translate(${(width - margin)*0.30},${(height + margin1.top + 2)*0.45})`)
+                .attr('transform', `translate(${(width - margin)*0.60},${(height + margin1.top + 2)*0.45})`)
                 .attr('font-weight', 'bold')
                 .style('text-anchor', 'middle')
                 .text('Chemicals');
@@ -855,8 +855,8 @@
                 .duration(200)
                 .style('opacity', .9);
             bartooltip.html(`Value: ${d.value}`)
-                .style('left', `${x}px`)
-                .style('top', `${y}px`);
+                .style('left', `${x+800}px`)
+                .style('top', `${y+650}px`);
         }
 
         function handleMouseOut() {
