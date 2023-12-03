@@ -489,7 +489,7 @@
                     tooltip.transition()
                         .duration(200)
                         .style("opacity", .9);
-                    tooltip.html("<strong>Date:</strong> " + d.date + "<br/>TP: " + d[chem])
+                    tooltip.html(selectedLocation + "<br/>"+"Date: " + d.date + "<br/>"+chem + d[chem]+ "<br/> ")
                         .style("left", (event.pageX + 5) + "px")
                         .style("top", (event.pageY - 28) + "px");
                 })
