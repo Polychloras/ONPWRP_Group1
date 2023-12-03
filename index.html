@@ -280,12 +280,12 @@
                             .attr("transform", `translate(${margin*1.75}, ${height - margin})`);
 
             var yAxis = svg.append("g")
-                            .attr("transform", `translate(${margin*3}, 0)`);
+                            .attr("transform", `translate(${margin*2.75}, 0)`);
 
             selectedLocation = selectedLocation.split("\n")[0]
             var dataSelected = final_data[selected][selectedLocation];
             dataSelected = d3.filter(dataSelected, d => d[chem_selected])
-            console.log(dataSelected, dataSelected.length)
+            
             x.domain(d3.extent(dataSelected, function (d) { return d3.timeParse("%Y%m%d")(d.date); }));
             y.domain([0, d3.max(dataSelected, function (d) { return +d[chem]; })]);
 
@@ -391,6 +391,7 @@
                     return [mark_color, quant_rad]
                 }
             }
+            return [seq_col[0], 0]
         }
         // get_markloc
         // inputs: data, chem
@@ -547,7 +548,7 @@
                     .attr('x', wind.margin * 1.5)
                     .attr('y', (d, i) => wind.margin * (i + 3.13))
                     .attr('fill', (d, i) => d3.color(seq_col[seq_col.length]))
-                    .text(d => { console.log(d); return `${d.toFixed(3)}` })
+                    .text(d => { return `${d.toFixed(3)}` })
 
                 map.setView([lat, long], zoom)
                 mark_group = L.layerGroup(markers)
@@ -600,7 +601,7 @@
                     .attr('x', wind.margin * 1.5)
                     .attr('y', (d, i) => wind.margin * (i + 3.13))
                     .attr('fill', (d, i) => d3.color(seq_col[seq_col.length]))
-                    .text(d => { console.log(d); return `${d.toFixed(3)}` })
+                    .text(d => { return `${d.toFixed(3)}` })
 
                 map.setView([lat, long], zoom)
                 mark_group = L.layerGroup(markers)
@@ -637,10 +638,12 @@
                                     +` <strong> ${current_chem} : </strong>` + filt_data[i][current_chem]
                         
                         let col_rad = calc_clr(data, current_chem, filt_data[i][current_chem])
-                        let rad = ((col_rad[1] / filt_max) + 0.5) * coor_map.r
-                        if(!rad){
-                            rad = 0
+                        let rad = 0
+                        console.log(filt_data,col_rad != null, filt_max)
+                        if(col_rad[1]){
+                            rad = ((col_rad[1] / filt_max) + 0.5) * coor_map.r
                         }
+                        
                         markers.push(L.circle([filt_data[i].y, filt_data[i].x],
                             { radius: rad, color: col_rad[0] }))
 
@@ -660,7 +663,7 @@
 
         L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
             maxZoom: 20,
-            minZoom: 15,
+            minZoom: 13,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             layers: [mark_group]
         }).addTo(map);
