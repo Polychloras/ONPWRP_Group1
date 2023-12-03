@@ -41,6 +41,7 @@
             <div id="barChartTooltip"></div>
         </div>
     </div>
+
     </div>
 
     <script type="module">
@@ -203,6 +204,39 @@
         //==============================================================================================================================
         function prepare_data(data, file_data) {
             let chem_data = {}
+            chem_data[file_data] = []
+            let time_group = d3.groups(data, d => d.visitDate)
+
+            for(var k = 0; k < time_group.length; k++){
+                if(file_data == "water"){
+                    console.log(time_group[k][0])
+                    chem_data[file_data].push({ "date": time_group[k][0] 
+                                                , "TP": d3.mean(time_group[k][1], d=>d.TP)
+                                                , "TN": d3.mean(time_group[k][1], d=>d.TN)
+                                                , "disNO3": d3.mean(time_group[k][1], d=>d.disNO3)
+                                                , "disNH4": d3.mean(time_group[k][1], d=>d.disNH4)
+                                                , "disPO4": d3.mean(time_group[k][1], d=>d.disPO4)});
+
+                }else{
+                    chem_data[file_data].push({ "date": time_group[k][0]
+                                                ,"TP": d3.mean(time_group[k][1], d=>d.TP)
+                                                ,"TN": d3.mean(time_group[k][1], d=>d.TN)
+                                                ,"m3.P": d3.mean(time_group[k][1], d=>d["m3.P"]), 
+                                                 "m3.Fe": d3.mean(time_group[k][1], d=>d["m3.Fe"]),
+                                                 "m3.Al": d3.mean(time_group[k][1], d=>d["m3.Al"]), 
+                                                 "m3.Ca": d3.mean(time_group[k][1], d=>d["m3.Ca"]), 
+                                                 "m3.Mg": d3.mean(time_group[k][1], d=>d["m3.Mg"]), 
+                                                 "m3.K": d3.mean(time_group[k][1], d=>d["m3.K"]), 
+                                                 "wEX.P": d3.mean(time_group[k][1], d=>d["wEX.P"]), 
+                                                 "wEX.NH3": d3.mean(time_group[k][1], d=>d["wEX.NH3"]), 
+                                                 "wEX.NOx": d3.mean(time_group[k][1], d=>d["wEX.NOx"]) });
+                                        
+
+                }
+
+               chem_data[file_data] = d3.sort(chem_data[file_data], d=> d.date)
+            }
+
             for (var i = 0; i < data.length; i++) {
                 if (chem_data[data[i].locName]) {
                     if (file_data == 'water') {
@@ -210,8 +244,8 @@
                     }
                     else {
                         chem_data[data[i].locName].push({ "date": data[i].visitDate, "TN": data[i].TN, "TP": data[i].TP, "m3.P": data[i]["m3.P"], "m3.Fe": data[i]["m3.Fe"], "m3.Al": data[i]["m3.Al"], "m3.Ca": data[i]["m3.Ca"], "m3.Mg": data[i]["m3.Mg"], "m3.K": data[i]["m3.K"], "wEX.P": data[i]["wEX.P"], "wEX.NH3": data[i]["wEX.NH3"], "wEX.NOx": data[i]["wEX.NOx"] });
-
                     }
+                    
                 }
                 else {
                     chem_data[data[i].locName] = [];
@@ -220,11 +254,11 @@
                     }
                     else {
                         chem_data[data[i].locName].push({ "date": data[i].visitDate, "TN": data[i].TN, "TP": data[i].TP, "m3.P": data[i]["m3.P"], "m3.Fe": data[i]["m3.Fe"], "m3.Al": data[i]["m3.Al"], "m3.Ca": data[i]["m3.Ca"], "m3.Mg": data[i]["m3.Mg"], "m3.K": data[i]["m3.K"], "wEX.P": data[i]["wEX.P"], "wEX.NH3": data[i]["wEX.NH3"], "wEX.NOx": data[i]["wEX.NOx"] });
-
                     }
                 }
             }
             final_data[file_data] = chem_data;
+            
 
         }
 
@@ -243,7 +277,7 @@
             }
         }
 
-        // build graph
+        // build line+bar graph
         // inputs: data
         // returns: Adds a interactive graph to the website given in put data
         //=============================================================================================================================s
@@ -272,9 +306,7 @@
             selectedLocation = selectedLocation.split("\n")[0]
             var dataSelected = final_data[selected][selectedLocation];
             dataSelected = d3.filter(dataSelected, d => d);
-            // if (svg.selectAll('.bar')) {
-            //     svg.selectAll('.bar').remove();
-            // }
+   
             let svg_div_bar = d3.select("#bar-chart")
             svg_div_bar.selectAll("svg").remove()
 
@@ -313,13 +345,13 @@
 
             const yScale = d3.scaleLinear()
                 .domain([0, d3.max(sampleData, d => d.value)])
-                .range([height, 0]);
+                .range([height*0.4, 0]);
 
             // Create the SVG container
             const svg = d3.select('#bar-chart')
                 .append('svg')
                 .attr('width', width + margin1.left + margin1.right)
-                .attr('height', height + margin1.top + margin1.bottom)
+                .attr('height', (height + margin1.top + margin1.bottom)*0.5)
                 .append('g')
                 .attr('transform', `translate(${margin1.left},${margin1.top})`);
 
@@ -328,10 +360,10 @@
                 .data(sampleData)
                 .enter().append('rect')
                 .attr('class', 'bar')
-                .attr('x', d => xScale(`${d.chemical}`))
+                .attr('x', d => margin*1.75 + xScale(`${d.chemical}`))
                 .attr('width', xScale.bandwidth())
                 .attr('y', d => yScale(d.value))
-                .attr('height', d => height - yScale(d.value))
+                .attr('height', d => (height*0.4 - yScale(d.value)))
                 .attr('fill', d => colorScale(d.chemical))
                 .on('mouseover', handleMouseOver)
                 .on('mouseout', handleMouseOut);
@@ -339,7 +371,7 @@
             // Draw x-axis
             svg.append('g')
                 .attr('class', 'x-axis')
-                .attr('transform', `translate(0,${height})`)
+                .attr('transform', `translate(${margin*1.75},${height*0.40})`)
                 .call(d3.axisBottom(xScale))
                 .selectAll('text')
                 .style('text-anchor', 'end')
@@ -350,21 +382,24 @@
             // Draw y-axis
             svg.append('g')
                 .attr('class', 'y-axis')
+                .attr('transform', `translate(${margin*1.75},0)`)
                 .call(d3.axisLeft(yScale));
 
             // Add labels
             svg.append('text')
-                .attr('transform', `translate(${width / 2},${height + margin1.top + 20})`)
+                .attr('transform', `translate(${(width - margin)*0.30},${(height + margin1.top + 2)*0.45})`)
+                .attr('font-weight', 'bold')
                 .style('text-anchor', 'middle')
-                .text('Chemical');
+                .text('Chemicals');
 
             svg.append('text')
                 .attr('transform', 'rotate(-90)')
-                .attr('y', 0 - margin1.left)
-                .attr('x', 0 - height / 2)
+                .attr('y', 0 - margin*0.3)
+                .attr('x', 0 - ((height+margin)*0.35)/2)
+                .attr('font-weight', 'bold')
                 .attr('dy', '1em')
                 .style('text-anchor', 'middle')
-                .text('Value');
+                .text('Chemical Mean');
         }
 
 
@@ -373,15 +408,21 @@
         // returns: updates graph given interactive
         //=============================================================================================================================
         function update(selectedLocation, selected, chem) {
-
-
-
             let svg_div = d3.select("#chart")
             svg_div.selectAll("svg").remove()
             let svg = svg_div.append('svg')
                 .attr("width", wind.width + margin * 4)
-                .attr("height", (height + margin) * 0.5)
+                .attr("height", (height + margin) * 0.52)
 
+            let graph_text = selectedLocation
+            if(selectedLocation == "water" || selectedLocation == "soil"){
+                graph_text = "All " + selectedLocation + " Samples"
+            }   
+            var graph_title = svg.append('text')
+                             .attr("x", margin*4)
+                             .attr("y", margin*0.90)
+                             .attr("class", "Graph Title")
+                              .text(graph_text)
 
             var xAxis = svg.append("g")
                 .attr("transform", `translate(${margin * 1.75}, ${(height - margin) * 0.45})`);
@@ -391,8 +432,8 @@
 
             selectedLocation = selectedLocation.split("\n")[0]
             var dataSelected = final_data[selected][selectedLocation];
+            console.log(dataSelected, selected, selectedLocation);
             dataSelected = d3.filter(dataSelected, d => d[chem_selected])
-            console.log(dataSelected);
             x.domain(d3.extent(dataSelected, function (d) { return d3.timeParse("%Y%m%d")(d.date); }));
             y.domain([0, d3.max(dataSelected, function (d) { return +d[chem]; })]);
 
@@ -414,8 +455,9 @@
                 .attr("transform", "rotate(-40)");
 
             svg.append("text")
-                .attr("transform", "translate(" + (width) + " ," + (height + margin1.top + 30) + ")")
+                .attr("transform", "translate(" + (width*0.5) + " ," + (height + margin1.top + 30)*0.48 + ")")
                 .style("text-anchor", "middle")
+                .attr("font-weight", "bold")
                 .text("Date");
 
             svg.append("text")
@@ -423,6 +465,7 @@
                 .attr("y", margin)
                 .attr("x", 0 - (height / 2) * 0.45)
                 .attr("dy", "1em")
+                .attr("font-weight", "bold")
                 .style("text-anchor", "middle")
                 .text(chem);
 
@@ -586,7 +629,7 @@
             .attr('y', (d, i) => wind.margin * (i + 3.13))
             .attr('fill', (d, i) => d3.color(seq_col[seq_col.length]))
             .text(d => `${d.toFixed(3)}`)
-
+        update(map_selected, map_selected, chem_selected)
         // get selection for map
         d3.select("#map_select")
             .on('change', function (event, d) {
@@ -660,7 +703,7 @@
                 map.setView([lat, long], zoom)
                 mark_group = L.layerGroup(markers)
                 mark_group.addTo(map);
-
+                update(map_selected, map_selected, chem_selected)
 
 
             })
@@ -713,6 +756,13 @@
                 map.setView([lat, long], zoom)
                 mark_group = L.layerGroup(markers)
                 mark_group.addTo(map);
+                if(loc_selected != true){
+                    console.log(loc_selected, map_selected, current_chem)
+                    update(map_selected, map_selected, current_chem)
+                }
+                else{
+                    update(loc_selected, map_selected, current_chem)
+                }
             })
 
         // add markers for location filter
@@ -764,7 +814,8 @@
 
 
         function onclick(e) {
-            map.setView([e.latlng.lat, e.latlng.lng], coor_map.zoomin)
+            map.setView([e.latlng.lat, e.latlng.lng], coor_map.zoom)
+            update(map_selected, map_selected, chem_selected);
         }
         map.on('click', onclick);
 
@@ -781,8 +832,14 @@
             //var selectedOption = d3.select(this).property("value")
             // Run the updateChart function with this selected option
             let popup = e.target.getPopup().getContent()
+            if(popup){
+                map.setView([e.latlng.lat, e.latlng.lng], coor_map.zoomin)
+            }
             popup = popup.split('</strong>')[0]
             popup = popup.split('<strong>')[1]
+            if(popup){
+                map.setView([e.latlng.lat, e.latlng.lng], coor_map.zoomin)
+            }
             update(popup, map_selected, chem_selected);
             updste_bar(popup, map_selected);
         }
