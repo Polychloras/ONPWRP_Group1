@@ -818,7 +818,7 @@
         
         d3.select('#date-slider').on('change', function(event, d){
             let value = d3.select(this).property("value") 
-            let temp_data = d3.filter(data, d=> { return (Number(d.visitDate.substring(4,6)) + num_months * (Number(d.visitDate.substring(0,4)) - min_year)) <= value} )
+            let temp_data = d3.filter(data, d=> { return (Number(d.visitDate.substring(4,6)) + num_months * (Number(d.visitDate.substring(0,4)) - min_year)) >= value} )
             slider_box.remove()
             let ytxt = Math.floor(value/num_months) + min_year
             let date = Number(ytxt) + "" + mtxt
