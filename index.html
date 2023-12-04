@@ -38,12 +38,11 @@
     <div id=graph class="graph">
         <div id="chart"></div>
         <div id="bar-chart">
-            <div id="barChartTooltip"></div>
-            <div>
+            <div id = "timeslide">
                 <label for="date-slider">Select Date</label>
-                <input type="range" id="date-slider" min="0" max="2" step="1" value="0">
                 <span id="selected-date"></span>
             </div>
+            <div id="barChartTooltip"></div>
         </div>
         
     </div>
@@ -162,7 +161,21 @@
             .attr('href', "http://www.openstreetmap.org/copyright")
             .text("openstreetmap copyright")
 
-
+        let max_year = d3.max(data, d => Number(d.visitDate.substring(0, 4))) + 1
+        let min_mon = d3.min(data, d => Number(d.visitDate.substring(4, 6)))
+        let max_mon = d3.max(data, d => Number(d.visitDate.substring(4, 6))) + 1
+        let min_year = d3.min(data, d => Number(d.visitDate.substring(0, 4)))
+        let num_years = max_year - min_year
+        let num_months = 12
+        console.log(num_years, num_months)
+        let slider = d3.select("#timeslide")
+                        .append('input')
+                        .attr('type', 'range')
+                        .attr('max', (num_years * num_months))
+                        .attr('min', 0)
+                        .attr('step', 4)
+                        .attr('value',  ((num_years) * (num_months)))
+                        .attr('id', 'date-slider')
         // find date
         // inputs: data
         // returns: converts visit date into date objects
@@ -407,6 +420,7 @@
         //=============================================================================================================================
         function update(selectedLocation, selected, chem) {
             let svg_div = d3.select("#chart")
+      
             svg_div.selectAll("svg").remove()
             let svg = svg_div.append('svg')
                 .attr("width", wind.width + margin * 4)
@@ -432,7 +446,6 @@
 
             selectedLocation = selectedLocation.split("\n")[0]
             var dataSelected = final_data[selected][selectedLocation];
-            console.log(dataSelected, selected, selectedLocation)
             dataSelected = d3.filter(dataSelected, d => d[chem_selected])
             x.domain(d3.extent(dataSelected, function (d) { return d3.timeParse("%Y%m%d")(d.date); }));
             y.domain([0, d3.max(dataSelected, function (d) { return +d[chem]; })]);
@@ -712,6 +725,20 @@
 
             })
 
+        d3.select('#date-slider').on('change', function(event, d){
+            let value = d3.select(this).property("value") 
+            let temp_data = d3.filter(data, d=> { return (Number(d.visitDate.substring(4,6)) + num_months * (Number(d.visitDate.substring(0,4)) - min_year)) <= value} )
+
+            prepare_data(temp_data, map_selected)
+            if(loc_selected != ""){
+                update(loc_selected, map_selected, chem_selected)
+            }
+            else{
+                update(map_selected, map_selected, chem_selected)
+            }
+      
+              
+        })
         d3.select('#chem_select')
             .on('change', function (event, d) {
                 chem_selected = d3.select(this).property("value")
@@ -875,17 +902,7 @@
                 .style('opacity', 0);
         }
 
-        const slider = d3.select('#date-slider');
-        const selectedDateText = d3.select('#selected#date');
-
-        function slides(){
-            slider.on('input', function(){
-                const index = +this.value;
-                const selectedDate = sampleData[index].date;
-                selectedDateText.text(`Selected Date: ${selectedDate}`);
-                const filteredData = sampleData.filter(d => d.date === selectedDate);
-            });
-        }
+ 
 
     </script>
 </body>
