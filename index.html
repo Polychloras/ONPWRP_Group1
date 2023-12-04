@@ -160,9 +160,9 @@
             .attr('href', "http://www.openstreetmap.org/copyright")
             .text("openstreetmap copyright")
 
-        let max_year = d3.max(data, d => Number(d.visitDate.substring(0, 4))) + 1
+        let max_year = d3.max(data, d => Number(d.visitDate.substring(0, 4))) 
         let min_mon = d3.min(data, d => Number(d.visitDate.substring(4, 6)))
-        let max_mon = d3.max(data, d => Number(d.visitDate.substring(4, 6))) + 1
+        let max_mon = d3.max(data, d => Number(d.visitDate.substring(4, 6))) 
         let min_year = d3.min(data, d => Number(d.visitDate.substring(0, 4)))
         let num_years = max_year - min_year
         let num_months = 12
@@ -172,12 +172,20 @@
                         .attr('type', 'range')
                         .attr('max', (num_years * num_months))
                         .attr('min', 0)
-                        .attr('step', 4)
+                        .attr('step', 3)
                         .attr('value',  ((num_years) * (num_months)))
                         .attr('id', 'date-slider')
 
 
+         let slider_box = d3.select("#timeslide")
+                        .append('div')
+                        .attr('id', 'slidetext')
 
+        let mtxt = max_mon - 1
+        let slider_text = slider_box
+                        .append('text')
+                        .text("Year: " + max_year + " Month: " + mtxt)
+        
         // find date
         // inputs: data
         // returns: converts visit date into date objects
@@ -811,7 +819,19 @@
         d3.select('#date-slider').on('change', function(event, d){
             let value = d3.select(this).property("value") 
             let temp_data = d3.filter(data, d=> { return (Number(d.visitDate.substring(4,6)) + num_months * (Number(d.visitDate.substring(0,4)) - min_year)) <= value} )
+            slider_box.remove()
+            let ytxt = Math.floor(value/num_months) + min_year
+            let date = Number(ytxt) + "" + mtxt
+            let datetxt = new Date(date)
 
+            slider_box = d3.select("#timeslide")
+                        .append('div')
+                        .attr('id', 'slidetext')
+
+            slider_text = slider_box
+                            .append('text')
+                            .text("Year: " + ytxt)
+        
             prepare_data(temp_data, map_selected)
             if(loc_selected != ""){
                 update(loc_selected, map_selected, chem_selected)
@@ -821,7 +841,7 @@
                 update(map_selected, map_selected, chem_selected)
                 updste_bar(map_selected, map_selected);
             }
-      
+            
               
         })
 
