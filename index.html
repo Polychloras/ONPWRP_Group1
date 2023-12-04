@@ -821,9 +821,6 @@
             let temp_data = d3.filter(data, d=> { return (Number(d.visitDate.substring(4,6)) + num_months * (Number(d.visitDate.substring(0,4)) - min_year)) <= value} )
             slider_box.remove()
             let ytxt = Math.floor(value/num_months) - 1 + min_year
-            let date = Number(ytxt) + "" + mtxt
-            let datetxt = new Date(date)
-
             slider_box = d3.select("#timeslide")
                         .append('div')
                         .attr('id', 'slidetext')
