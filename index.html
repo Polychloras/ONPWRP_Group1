@@ -648,7 +648,7 @@
         let lgd_dsc = bin_svg.append('text')
             .attr('x', wind.margin / 2)
             .attr('y', wind.margin * 2)
-            .text(`${current_chem} mean <= `)
+            .text(`${current_chem} mean >= `)
             .attr("font-weight", "bold")
 
         let bins = bin_svg.selectAll('g')
@@ -721,7 +721,7 @@
                 lgd_dsc = bin_svg.append('text')
                     .attr('x', wind.margin / 2)
                     .attr('y', wind.margin * 2)
-                    .text(`${current_chem} mean <= `)
+                    .text(`${current_chem} mean >= `)
                     .attr("font-weight", "bold")
 
                 bins = bin_svg.selectAll('g')
@@ -775,7 +775,7 @@
                 lgd_dsc = bin_svg.append('text')
                     .attr('x', wind.margin / 2)
                     .attr('y', wind.margin * 2)
-                    .text(`${current_chem} mean <= `)
+                    .text(`${current_chem} mean >= `)
                     .attr("font-weight", "bold")
 
                 bins = bin_svg.selectAll('g')
