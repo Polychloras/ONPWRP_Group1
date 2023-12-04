@@ -37,6 +37,10 @@
     </div>
     <div id=graph class="graph">
         <div id="chart"></div>
+        <div id = "timeslide">
+            <label for="date-slider">Select Date</label>
+            <span id="selected-date"></span>
+        </div>
         <div id="bar-chart">
         </div>
        
@@ -155,6 +159,23 @@
             .append('a')
             .attr('href', "http://www.openstreetmap.org/copyright")
             .text("openstreetmap copyright")
+
+        let max_year = d3.max(data, d => Number(d.visitDate.substring(0, 4))) + 1
+        let min_mon = d3.min(data, d => Number(d.visitDate.substring(4, 6)))
+        let max_mon = d3.max(data, d => Number(d.visitDate.substring(4, 6))) + 1
+        let min_year = d3.min(data, d => Number(d.visitDate.substring(0, 4)))
+        let num_years = max_year - min_year
+        let num_months = 12
+        console.log(num_years, num_months)
+        let slider = d3.select("#timeslide")
+                        .append('input')
+                        .attr('type', 'range')
+                        .attr('max', (num_years * num_months))
+                        .attr('min', 0)
+                        .attr('step', 4)
+                        .attr('value',  ((num_years) * (num_months)))
+                        .attr('id', 'date-slider')
+
 
 
         // find date
@@ -773,6 +794,24 @@
                     update(loc_selected, map_selected, current_chem)
                 }
             })
+
+        
+        d3.select('#date-slider').on('change', function(event, d){
+            let value = d3.select(this).property("value") 
+            let temp_data = d3.filter(data, d=> { return (Number(d.visitDate.substring(4,6)) + num_months * (Number(d.visitDate.substring(0,4)) - min_year)) <= value} )
+
+            prepare_data(temp_data, map_selected)
+            if(loc_selected != ""){
+                update(loc_selected, map_selected, chem_selected)
+                updste_bar(loc_selected, map_selected);
+            }
+            else{
+                update(map_selected, map_selected, chem_selected)
+                updste_bar(map_selected, map_selected);
+            }
+      
+              
+        })
 
         // add markers for location filter
         d3.select("#loc_select")
