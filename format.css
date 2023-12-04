@@ -11,7 +11,9 @@ text[class='Graph Title']{
     font-size: 20px;
     background-color: #40394A;
 }
-
+label[class = slide]{
+    font-weight: "bold";
+}
 div[class = 'legend']{
     float:left;
     background-color:#7ECA9C;

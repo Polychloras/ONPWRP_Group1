@@ -38,7 +38,7 @@
     <div id=graph class="graph">
         <div id="chart"></div>
         <div id = "timeslide">
-            <label for="date-slider">Select Date</label>
+            <label for="date-slider" class = "slide">Date</label>
             <span id="selected-date"></span>
         </div>
         <div id="bar-chart">
@@ -367,6 +367,18 @@
                 .attr('height', (height + margin1.top + margin1.bottom)*0.5)
                 .append('g')
                 .attr('transform', `translate(${margin1.left},${margin1.top})`);
+
+            let graph_text = selectedLocation
+            if(selectedLocation == "water" || selectedLocation == "soil"){
+                graph_text = "All " + selectedLocation[0].toUpperCase() + selectedLocation.substring(1,selectedLocation.length) +" "
+            }   
+            graph_text += ` Chemical Means`
+
+            var graph_title = svg.append('text')
+                             .attr("x", margin*2)
+                             .attr("y", -5)
+                             .attr("class", "Graph Title")
+                              .text(graph_text)
 
             // Draw bars
             svg.selectAll('.bar')
