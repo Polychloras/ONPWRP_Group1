@@ -160,7 +160,7 @@
             .attr('href', "http://www.openstreetmap.org/copyright")
             .text("openstreetmap copyright")
 
-        let max_year = d3.max(data, d => Number(d.visitDate.substring(0, 4))) 
+        let max_year = d3.max(data, d => Number(d.visitDate.substring(0, 4))) + 1
         let min_mon = d3.min(data, d => Number(d.visitDate.substring(4, 6)))
         let max_mon = d3.max(data, d => Number(d.visitDate.substring(4, 6))) 
         let min_year = d3.min(data, d => Number(d.visitDate.substring(0, 4)))
@@ -818,9 +818,9 @@
         
         d3.select('#date-slider').on('change', function(event, d){
             let value = d3.select(this).property("value") 
-            let temp_data = d3.filter(data, d=> { return (Number(d.visitDate.substring(4,6)) + num_months * (Number(d.visitDate.substring(0,4)) - min_year)) >= value} )
+            let temp_data = d3.filter(data, d=> { return (Number(d.visitDate.substring(4,6)) + num_months * (Number(d.visitDate.substring(0,4)) - min_year)) <= value} )
             slider_box.remove()
-            let ytxt = Math.floor(value/num_months) + min_year
+            let ytxt = Math.floor(value/num_months) - 1 + min_year
             let date = Number(ytxt) + "" + mtxt
             let datetxt = new Date(date)
 
